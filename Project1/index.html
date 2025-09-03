@@ -31,6 +31,7 @@
 
 <body>
     <h1>Project 1: Colorizing the Prokudin-Gorskii photo collection</h1>
+    <a href="../index.html">← Back to Home</a> 
 
     <div>
         <h2>Introduction</h2>
@@ -41,7 +42,7 @@
             <p>
                 First, the image is read in grayscale, converted to float64, and the pixel values are normalized to the range [0,1]. The height of the image is then divided by three which is then used to separate it into its blue, green, and red components. The green and red channels are subsequently aligned to the blue channel.<br><br>
 
-                Alignment begins with preprocessing. Each channel is cropped by about 10% (empirically chosen to remove noisy borders). If the Sobel flag is enabled, a Sobel edge detector is applied and the gradient magnitude is computed, so that alignment is performed using edges rather than raw pixel intensities. This ends up being a better way to align images and is elaborated further on in the Bells & Whistles section below.<br><br>
+                Alignment begins with preprocessing. Each channel is cropped by about 10% (an empirically chosen value to remove noisy borders). I found images like emir.tif and cathedral.jpg particularly challenging to align because the intensity values across channels differed so much. To address this, I implemented an edge-based method instead of relying solely on raw pixel intensities. When the Sobel flag is enabled, a Sobel edge detector computes the gradient magnitude, and alignment is performed on these edge maps. With the Sobel flag enabled, I was able to accurately align all of the images. This approach proved far more effective and is discussed further in the Bells & Whistles section below.<br><br>
 
                 The actual alignment is handled with an image pyramid. The images are recursively downsampled (to depth 2 for .jpg and depth 5 for .tif images), and alignment is first estimated at the coarsest scale. At each level, one image is shifted within a search window, and a scoring function evaluates the alignment quality. I implemented both Euclidean distance and Normalized Cross-Correlation as scoring metrics, thought I opted to use Euclidean distance. After offsets are found at a coarse scale, they are doubled when passed to the next finer scale, where the search is repeated in the same range around those offsets. The coarse-to-fine image pyramid approach makes alignment efficient for both large files (.tif) and smaller files (.jpg), significantly reducing computation time while maintaining accuracy.<br><br>
 
