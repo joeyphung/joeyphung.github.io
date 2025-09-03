@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- This shows up in the browser tab  -->
+    <title>Project 1</title>
+
+    <!--
+        body: applies to the whole page, margin adds space around the page edges
+            margin adds space around the page edges
+    -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        
+        img {
+            width: 300px;   /* shrink all images to 300px wide */
+            height: auto;   /* keeps aspect ratio */
+        }
+
+        figure {
+            display: inline-block;   /* allows figures to sit side by side */
+            margin: 0px;             /* spacing between figures */
+            text-align: center;      /* centers captions below each image */
+        }
+
+    </style>
+</head>
+
+
+<body>
+    <h1>Project 1: Colorizing the Prokudin-Gorskii photo collection</h1>
+
+    <div>
+        <h2>Introduction</h2>
+            <p>
+                This project reconstructs Sergei Prokudin-Gorskii’s early 20th-century color photographs, which were captured as three separate glass plate exposures (blue, green, and red). The algorithm produces sharp, full-color reconstructions of scenes from the Russian Empire, bringing century-old photographs back to life.
+            </p>
+        <h2>Algorithm</h2>
+            <p>
+                First, the image is read in grayscale, converted to float64, and the pixel values are normalized to the range [0,1]. The height of the image is then divided by three which is then used to separate it into its blue, green, and red components. The green and red channels are subsequently aligned to the blue channel.<br><br>
+
+                Alignment begins with preprocessing. Each channel is cropped by about 10% (empirically chosen to remove noisy borders). If the Sobel flag is enabled, a Sobel edge detector is applied and the gradient magnitude is computed, so that alignment is performed using edges rather than raw pixel intensities. This ends up being a better way to align images and is elaborated further on in the Bells & Whistles section below.<br><br>
+
+                The actual alignment is handled with an image pyramid. The images are recursively downsampled (to depth 2 for .jpg and depth 5 for .tif images), and alignment is first estimated at the coarsest scale. At each level, one image is shifted within a search window, and a scoring function evaluates the alignment quality. I implemented both Euclidean distance and Normalized Cross-Correlation as scoring metrics, thought I opted to use Euclidean distance. After offsets are found at a coarse scale, they are doubled when passed to the next finer scale, where the search is repeated in the same range around those offsets. The coarse-to-fine image pyramid approach makes alignment efficient for both large files (.tif) and smaller files (.jpg), significantly reducing computation time while maintaining accuracy.<br><br>
+
+                Finally, once the green and red channels are aligned to the blue, the three channels are stacked to form an RGB image, producing a crisp, full-color reconstruction.<br><br>
+            </p>
+    </div>
+
+    <div>
+        <h2>Results (on the provided images)</h2>
+        <figure>
+            <img src="./images/out_cathedral.jpg">
+            <figcaption>
+                cathedral.jpg <br>
+                Green offset: (2, 5) <br>
+                Red offset: (3, 12)
+            </figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_church.jpg">
+            <figcaption>
+                church.tif <br>
+                Green offset: (4, 25) <br>
+                Red offset: (-4, 58)
+            </figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_emir.jpg">
+            <figcaption>
+                emir.tif <br>
+                Green offset: (23, 49) <br>
+                Red offset: (40, 107)
+            </figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_harvesters.jpg">
+            <figcaption>
+                harvester.tif <br>
+                Green offset: (17, 60) <br>
+                Red offset: (13, 123)
+            </figcaption>
+        </figure>        
+        
+        <figure>
+            <img src="./images/out_icon.jpg">
+            <figcaption>
+                icon.tif <br>
+                Green offset: (17, 42) <br>
+                Red offset: (23, 90)
+            </figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_lady.jpg">
+            <figcaption>
+                lady.tif <br>
+                Green offset: (9, 56) <br>
+                Red offset: (13, 120)
+            </figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_melons.jpg">
+            <figcaption>
+                melons.tif <br>
+                Green offset: (10, 80) <br>
+                Red offset: (12, 177)
+            </figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_monastery.jpg">
+            <figcaption>
+                monastery.jpg <br>
+                Green offset: (2, -3) <br>
+                Red offset: (2, 3)
+            </figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_onion_church.jpg">
+            <figcaption>
+                onion_church.tif <br>
+                Green offset: (24, 52) <br>
+                Red offset: (36, 107)
+            </figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_sculpture.jpg">
+            <figcaption>
+                sculpture.tif <br>
+                Green offset: (-11, 33) <br>
+                Red offset: (-26, 140)
+            </figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_self_portrait.jpg">
+            <figcaption>
+                self_portrait.tif <br>
+                Green offset: (29, 78) <br>
+                Red offset: (37, 176)
+            </figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_three_generations.jpg">
+            <figcaption>
+                three_generations.tif <br>
+                Green offset: (12, 54) <br>
+                Red offset: (8, 111)
+            </figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_tobolsk.jpg">
+            <figcaption>
+                tobolsk.jpg <br>
+                Green offset: (3, 3) <br>
+                Red offset: (3, 6)
+            </figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_train.jpg">
+            <figcaption>
+                train.tif <br>
+                Green offset: (1, 41) <br>
+                Red offset: (29, 85)
+            </figcaption>
+        </figure>
+    </div>
+
+    <div>
+        <h2>Results (on images of my choosing)</h2>
+        <figure>
+            <img src="./images/out_flowers.jpg">
+            <figcaption>
+                flowers.tif <br>
+                Green offset: (-7, 49) <br>
+                Red offset: (-24, 96)
+            </figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_navy.jpg">
+            <figcaption>
+                navy.tif <br>
+                Green offset: (19, 20) <br>
+                Red offset: (30, 57)
+            </figcaption>
+        </figure>
+
+                <figure>
+            <img src="./images/out_rainbow.jpg">
+            <figcaption>
+                rainbow.tif <br>
+                Green offset: (-1, 13) <br>
+                Red offset: (-1, 79)
+            </figcaption>
+        </figure>
+    </div>
+
+    <div>
+        <h2>Bells & Whistles (Extra Credit)</h2>
+        <p>
+            For some images, aligning channels based on raw pixel intensities is simply not enough. A key challenge is that the brightness values across the color channels can vary significantly. For example, in the emir.tif image, the subject's vibrant clothing is bright in the blue channel but dark in the red channel. A simple comparison of these intensity values would fail to produce an accurate alignment. <br><br>
+
+            To overcome this, I implemented a more robust alignment metric using a Sobel edge detector. The core idea is to align the images based on their structural features rather than their brightness. Edges are far more likely to be consistent across the R, G, and B channels. <br><br>
+
+            My implementation first applies the Sobel edge detector to each channel to compute the gradient magnitude. This effectively creates a map of the prominent edges in each image. The pyramid alignment algorithm then uses these edge maps instead of the original pixel intensities as the basis for comparison. As seen in the results for emir.tif and cathedral.tif, this method is highly effective, producing a dramatically sharper and more accurate alignment where the intensity-based approach fails.
+        </p>
+        <figure>
+            <img src="./images/out_no_sobel_emir.jpg">
+            <figcaption>emir.tif aligned using pixel intensities</figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_emir.jpg">
+            <figcaption>emir.tif aligned using edges</figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_no_sobel_cathedral.jpg">
+            <figcaption>cathedral.tif aligned using pixel intensities</figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_cathedral.jpg">
+            <figcaption>cathedral.tif aligned using edges</figcaption>
+        </figure>
+    </div>
+    <div>
+        <h2>Conclusion</h2>
+        <p>
+            This project demonstrates how modern image processing techniques can revive historical photographs with remarkable clarity. By combining pyramid alignment with edge-based matching, the once monochrome Prokudin-Gorskii glass plate negatives were reconstructed into vibrant, full-color images. The results highlight both the technical effectiveness of the methods and the cultural value of bringing these century-old scenes back to life.
+        </p>
+    </div>
+
+</body>
+
+</html>
