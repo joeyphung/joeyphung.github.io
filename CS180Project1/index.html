@@ -42,7 +42,7 @@
             <p>
                 First, the image is read in grayscale, converted to float64, and the pixel values are normalized to the range [0,1]. The height of the image is then divided by three which is then used to separate it into its blue, green, and red components. The green and red channels are subsequently aligned to the blue channel.<br><br>
 
-                Alignment begins with preprocessing. I found images like emir.tif and cathedral.jpg particularly challenging to align because the intensity values across channels differed so much. To address this, I implemented an edge-based method instead of relying solely on raw pixel intensities. When the Sobel flag is enabled, a Sobel edge detector computes the gradient magnitude, and alignment is performed on these edge maps. With the Sobel flag enabled, I was able to accurately align all of the images. This approach proved far more effective and is discussed further in the Bells & Whistles section below.<br><br>
+                Alignment begins with preprocessing. I found images like emir.tif particularly challenging to align because the intensity values across channels differed so much. To address this, I implemented an edge-based method instead of relying solely on raw pixel intensities. When the Sobel flag is enabled, a Sobel edge detector computes the gradient magnitude, and alignment is performed on these edge maps. With the Sobel flag enabled, I was able to accurately align all of the images. This approach proved far more effective and is discussed further in the Bells & Whistles section below.<br><br>
 
                 The actual alignment is handled with an image pyramid. The images are recursively downsampled (to depth 2 for .jpg and depth 5 for .tif images), and alignment is first estimated at the coarsest scale. At each level, one image is shifted within a search window, and a scoring function evaluates the alignment quality. Each image is cropped by about 10% (an empirically chosen value to remove noisy borders) before a score is calculated. I implemented both Euclidean distance and Normalized Cross-Correlation as scoring metrics, though I opted to use Euclidean distance. After offsets are found at a coarse scale, they are doubled when passed to the next finer scale, where the search is repeated in the same range around those offsets. The coarse-to-fine image pyramid approach makes alignment efficient for both large files (.tif) and smaller files (.jpg), significantly reducing computation time while maintaining accuracy.<br><br>
 
@@ -84,7 +84,7 @@
             <figcaption>
                 harvester.tif <br>
                 Green offset: (17, 60) <br>
-                Red offset: (13, 123)
+                Red offset: (14, 124)
             </figcaption>
         </figure>        
         
@@ -98,11 +98,29 @@
         </figure>
 
         <figure>
-            <img src="./images/out_lady.jpg">
+            <img src="./images/out_italil.jpg">
             <figcaption>
-                lady.tif <br>
-                Green offset: (9, 56) <br>
-                Red offset: (13, 120)
+                italil.tif <br>
+                Green offset: (22, 38) <br>
+                Red offset: (36, 77)
+            </figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_lastochikino.jpg">
+            <figcaption>
+                lastochikino.tif <br>
+                Green offset: (-2, -3) <br>
+                Red offset: (-8, 76)
+            </figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_lugano.jpg">
+            <figcaption>
+                lugano.tif <br>
+                Green offset: (-17, 41) <br>
+                Red offset: (-29, 791)
             </figcaption>
         </figure>
 
@@ -125,29 +143,20 @@
         </figure>
 
         <figure>
-            <img src="./images/out_onion_church.jpg">
-            <figcaption>
-                onion_church.tif <br>
-                Green offset: (24, 52) <br>
-                Red offset: (36, 107)
-            </figcaption>
-        </figure>
-
-        <figure>
-            <img src="./images/out_sculpture.jpg">
-            <figcaption>
-                sculpture.tif <br>
-                Green offset: (-11, 33) <br>
-                Red offset: (-26, 140)
-            </figcaption>
-        </figure>
-
-        <figure>
             <img src="./images/out_self_portrait.jpg">
             <figcaption>
                 self_portrait.tif <br>
-                Green offset: (29, 78) <br>
+                Green offset: (28, 77) <br>
                 Red offset: (37, 176)
+            </figcaption>
+        </figure>
+
+        <figure>
+            <img src="./images/out_siren.jpg">
+            <figcaption>
+                siren.jpg <br>
+                Green offset: (-7, 49) <br>
+                Red offset: (-24, 96)
             </figcaption>
         </figure>
 
@@ -163,18 +172,9 @@
         <figure>
             <img src="./images/out_tobolsk.jpg">
             <figcaption>
-                tobolsk.jpg <br>
-                Green offset: (3, 3) <br>
+                tobolsk.tif <br>
+                Green offset: (2, 3) <br>
                 Red offset: (3, 6)
-            </figcaption>
-        </figure>
-
-        <figure>
-            <img src="./images/out_train.jpg">
-            <figcaption>
-                train.tif <br>
-                Green offset: (1, 41) <br>
-                Red offset: (29, 85)
             </figcaption>
         </figure>
     </div>
@@ -216,7 +216,7 @@
 
             To overcome this, I implemented a more robust alignment metric using a Sobel edge detector. The core idea is to align the images based on their structural features rather than their brightness. Edges are far more likely to be consistent across the R, G, and B channels. <br><br>
 
-            My implementation first applies the Sobel edge detector to each channel to compute the gradient magnitude. This effectively creates a map of the prominent edges in each image. The pyramid alignment algorithm then uses these edge maps instead of the original pixel intensities as the basis for comparison. As seen in the results for emir.tif and cathedral.tif, this method is highly effective, producing a dramatically sharper and more accurate alignment where the intensity-based approach fails.
+            My implementation first applies the Sobel edge detector to each channel to compute the gradient magnitude. This effectively creates a map of the prominent edges in each image. The pyramid alignment algorithm then uses these edge maps instead of the original pixel intensities as the basis for comparison. As seen in the results for emir.tif, this method is highly effective, producing a dramatically sharper and more accurate alignment where the intensity-based approach fails.
         </p>
         <figure>
             <img src="./images/out_no_sobel_emir.jpg">
@@ -227,16 +227,7 @@
             <img src="./images/out_emir.jpg">
             <figcaption>emir.tif aligned using edges</figcaption>
         </figure>
-
-        <figure>
-            <img src="./images/out_no_sobel_cathedral.jpg">
-            <figcaption>cathedral.tif aligned using pixel intensities</figcaption>
-        </figure>
-
-        <figure>
-            <img src="./images/out_cathedral.jpg">
-            <figcaption>cathedral.tif aligned using edges</figcaption>
-        </figure>
+        
     </div>
     <div>
         <h2>Conclusion</h2>
