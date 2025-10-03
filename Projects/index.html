@@ -2,12 +2,75 @@
 <html>
 <head>
     <!-- This shows up in the browser tab  -->
-    <title>Home</title>
+    <title>Projects</title>
 
-    <style>                          
-        
+    <style>   
+        .projects_grid {
+            max-width: 90%; /* How much each project row takes of the screen*/
+            margin: 1em auto; /* Top/ Bottom margin and centered */
+            gap: 1em; /* Gap between projects horizontally */
+            display: flex; /* So they are displayed horizontally*/
+        }
+
+        .project {
+            flex: 1 1 calc(33.333% - 1em); /* take 1/3 of row minus gap */
+            padding: 2em;
+            margin: 0 auto;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            transition: transform 0.2s linear;
+        }
+
+        .project:hover {
+            transform: translateY(-7px);
+        }
+
+        .project_description {
+            margin: 0 0 0 0;
+        }
+
+        .project_stack {
+            list-style-type: none;      /* Removes default bullet points */
+            padding: 0;                 /* remove default ul padding */
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .project_stack-item {
+            font-size: 1rem;
+            margin: 0.5rem;
+        }
+
+        .project_link {                     
+            margin: 0em;                /* Adds margins around the socials */
+        }                              
+
+        .project_link a {                   
+            display: inline-block;      /* Makes links sit next to each other, also prevents weird artifacts */
+            margin: 0 10px;             /* Horizontal spacing between links */
+            transition: transform 0.2s; /* Smooth animation */
+        }                              
+
+        .project_link a i {                 
+            font-size: 2.5rem;            /* Large size for icons */
+            color: #272727;             /* Default dark gray color */
+        }                               
+
+        .project_link a i:hover {           
+            color: #0073b1;             /* Color for when the icon is hovered over */
+        }                  
+
+        .project_img {
+            max-width: 200px;
+            max-height: 200px;
+            margin: 0px 0px 1em 0px;
+        }            
+
     </style>
         <link rel="stylesheet" href="/assets/style.css">
+        <!-- For the icons at the bottom of the page -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
 <body>
@@ -19,7 +82,190 @@
             <li><a href="/assets/Resume Joey-Tai Phung.pdf" target="_blank">Resume</a></li>
         </ul>
     </nav>
-    
+
+    <div class="text">
+        <div class="projects_grid">
+
+            <div class="project">
+                <h2>PintOS</h2>
+                <img src="/assets/cs162bean.png" class="project_img">
+                <p class="project_description">
+                    Built an instructional operating system in C, implementing multithreading and synchronization, user program execution with system calls, and a full-featured file system.
+                </p>
+                <ul class="project_stack">
+                    <li class="project_stack-item">C</li>
+                </ul>
+            </div>
+
+            <div class="project">
+                <h2>A Secure File Sharing System</h2>
+                <p class="project_description">
+                    Developed a secure file sharing system in Go, implementing user authentication, encryption, access control, and secure data storage to ensure confidentiality and integrity.
+                </p>
+                <ul class="project_stack">
+                    <li class="project_stack-item">Go</li>
+                </ul>
+            </div>
+
+            <div class="project">
+                <h2>Build Your Own World</h2>
+                <img src="/assets/buildyourownworld.png" class="project_img">
+                <p class="project_description">
+                    Designed and implemented a 2D tile-based game world in Java, featuring procedural generation with Delaunay triangulation, interactive gameplay mechanics, and object-oriented architecture.
+                </p>
+                <ul class="project_stack">
+                    <li class="project_stack-item">Java</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <div class="projects_grid">
+            
+            <div class="project">
+                <h2>Chinese Checkers Pro</h2>
+                <img src="/assets/chinesecheckerspro.jpg" class="project_img">
+                <p class="project_description">
+                    Implemented multithreading and file system capabilities for the instructional operating system PintOS
+                </p>
+                <ul class="project_stack">
+                    <li class="project_stack-item">Python</li>
+                    <li class="project_stack-item">ROS</li>
+                </ul>
+                <div class="project_link">
+                    <a href="https://github.com/BrianStormDev/chinese_checkers" target="_blank">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="https://sites.google.com/berkeley.edu/fa24-eecs106a-group17/introduction?authuser=1" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="project">
+                <h2>Shell</h2>
+                <p class="project_description">
+                    Implemented a Unix-like shell in C, supporting process creation, command execution, I/O redirection, and job control with proper synchronization.
+                </p>
+                <ul class="project_stack">
+                    <li class="project_stack-item">C</li>
+                </ul>
+            </div>
+
+            <div class="project">
+                <h2>Snek</h2>
+                <img src="/assets/snek.png" class="project_img">
+                <p class="project_description">
+                    Built a snake game in C, implementing game logic, dynamic memory management, and low-level data structures to handle real-time user interaction.
+                </p>
+                <ul class="project_stack">
+                    <li class="project_stack-item">C</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="projects_grid">
+            
+            <div class="project">
+                <h2>Map Reduce</h2>
+                <img src="/assets/mapreduce.png" class="project_img">
+                <p class="project_description">
+                    Implemented a MapReduce framework in C, enabling parallel data processing with worker coordination, fault tolerance, and efficient task scheduling.
+                </p>
+                <ul class="project_stack">
+                    <li class="project_stack-item">C</li>
+                </ul>
+            </div>
+
+            <div class="project">
+                <h2>CS61CPU</h2>
+                <img src="/assets/cs61cpu.png" class="project_img">
+                <p class="project_description">
+                    Designed and implemented a simple CPU in Logisim to handle RISC-V instructions, building the instruction set architecture, control logic, datapath, and support for arithmetic, memory, and branching operations.
+                </p>
+                <ul class="project_stack">
+                    <li class="project_stack-item">Logisim</li>
+                </ul>
+            </div>
+
+            <div class="project">
+                <h2>2048</h2>
+                <img src="/assets/2048.png" class="project_img">
+                <p class="project_description">
+                    Developed a fully functional 2048 game in Java, implementing game mechanics, tile merging logic, and a responsive user interface with object-oriented design principles.
+                </p>
+                <ul class="project_stack">
+                    <li class="project_stack-item">Java</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="projects_grid">
+            <div class="project">
+                <h2>Scheme Interpreter</h2>
+                <img src="/assets/scheme.png" class="project_img">
+                <p class="project_description">
+                    I built a Scheme interpreter in Python from scratch, implementing symbol lookup, special forms (like define, lambda, quote, begin), user-defined procedures, and both lexical and dynamic scoping (via the lambda and mu forms).
+                </p>
+                <ul class="project_stack">
+                    <li class="project_stack-item">Python</li>
+                </ul>
+            </div>
+
+            <div class="project">
+                <h2>Micromouse</h2>
+                <p class="project_description">
+                    Designed and built an autonomous maze-solving robot from the ground up, assembling hardware components, integrating encoders and IR sensors, and implementing motor control with odometry and PID for precise movement.
+                </p>
+                <ul class="project_stack">
+                    <li class="project_stack-item">C++</li>
+                </ul>
+                <div class="project_link">
+                    <a href="https://github.com/joeyphung/Micromouse-Fall-2023" target="_blank">
+                        <i class="fab fa-github"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="project">
+                <h2>Modulock</h2>
+                <img src="/assets/modulock.png" class="project_img">
+                <p class="project_description">
+                    Collaborated with a team and Professor Scott Moura to design and build ModuLock, a U-Lock security augmentation with 3D-printed housing, ESP32 circuitry, and a C++ mobile app, winning the Judge’s Top Choice Award at Maker Design Expo 2023.
+                </p>
+                <ul class="project_stack">
+                    <li class="project_stack-item">C++</li>
+                </ul>
+                <div class="project_link">
+                    <a href="https://github.com/joeyphung/T-Prep2023" target="_blank">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="https://sites.google.com/berkeley.edu/prep2023/special-events/design-expo?authuser=0" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- <div class="project">
+                <h2>2048</h2>
+                <img src="/assets/2048.png" class="project_img">
+                <p class="project_description">
+                    Developed a fully functional 2048 game in Java, implementing game mechanics, tile merging logic, and a responsive user interface with object-oriented design principles.
+                </p>
+                <ul class="project_stack">
+                    <li class="project_stack-item">Java</li>
+                </ul>
+                <div class="project_link">
+                    <a href="YOUR_GITHUB_PROFILE_URL" target="_blank">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="YOUR_EXTERNAL_SITE_URL" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+            </div> -->
+        </div>
+    </div>
 </body>
 
 </html>
