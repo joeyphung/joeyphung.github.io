@@ -4,43 +4,128 @@
     <!-- This shows up in the browser tab  -->
     <title>My Portfolio</title>
 
-    <!--
-        body: applies to the whole page, margin adds space around the page edges
-            margin adds space around the page edges
-        ul (unordered list): 
-            list-style-type: removes bullet points
-            padding: removes the default identation
-        li (list items):
-            margin: adds 10px spacing above and below each item but 0 left and right
-                it expects the form of "margin: [top/bottom] [left/right]"
-    -->
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0px;                   /* Margin around the entire page */
+            text-align: center;            /* Center all text */
+        }                                  
+
+        .profile-pic {                     
+            width: 300px;                  
+            height: 300px;                 
+            margin-top: 40px;               /* Margin above the image */
+        }                                  
+
+        nav {                              
+            width: 100%;                   
+            height: 70px;                   /* Height of the nav bar */
+            display: flex;                  /* Use flexbox layout*/
+            justify-content: flex-end;      /* Align items to the right side of the nav bar */
+            align-items: center;            /* Vertically center nav items*/
+            padding: 0 40px;                /* Left/right padding to the nav bar */
+            box-sizing: border-box;         /* Include padding in the total width calculaiton */
+            background-color: #f8f8f8;     
+            border-bottom: 1px solid #ddd; 
+            position: sticky;               /* Sticks to the top when scrolling */
+            top: 0;                         /* Position relative to the top */
+            z-index: 100;                   /* Ensure nav bar stays layered over other elements */
+        }                                            
+                                                     
+        nav a {                    
+            text-decoration: none;  /* Remove the default underline from links */
+            color: #272727;         /* Set link text color to different color */
+            font-weight: 500;       /* Make the text slightly thicker than normal (but not bold) */
+            padding: 5px 10px;      /* Add space around the link text (top/bottom = 5px, left/right = 10px) */
+            transition: color 0.2s; /* Animate the color change */
+            font-size: 1.2rem;      /* Make text larger */
+        }                                            
+
+        nav a:hover {         
+            color: #0073b1;      /* Change text color to blue when hovered */
+        }                     
+
+        nav a.active {        
+            font-weight: bold; /* Make the "active" link (the current page) bold */
+        }               
+
+        nav ul {              
+            list-style: none;  /* Remove bullet points from nav list */
+            display: flex;     /* Lay out nav items horizontally */
+            gap: 30px;         /* Put 30px space between nav items */
+            margin: 0;         /* Remove default margin around the list */
+            padding: 0;        /* Remove default padding */
+        }                     
+
+        .bio {
+            max-width: 400px; /* Set a max width for the bio */
+            margin: 0 auto;   /* Center the paragraph block horizontally */
+            line-height: 1.5; /* Increases line spacing */
         }
-        ul {
-            list-style-type: none;
-            padding: 0; 
-        }
-        li {
-            margin: 10px 0;
-        }
+
+        .socials {                     
+            margin: 20px;               /* Adds margins around the socials */
+        }                              
+
+        .socials a {                   
+            display: inline-block;      /* Makes links sit next to each other, also prevents weird artifacts */
+            margin: 0 10px;             /* Horizontal spacing between links */
+            transition: transform 0.2s; /* Smooth animation */
+        }                              
+
+        .socials a i {                 
+            font-size: 4rem;            /* Large size for icons */
+            color: #272727;             /* Default dark gray color */
+        }                              
+
+        .socials a i:hover {           
+            color: #0073b1;             /* Color for when the icon is hovered over */
+        }                              
+
+        .socials a:hover {             
+            transform: scale(1.1);      /* Icons grow larger on hover */
+        }                              
+
     </style>
+
+    <!-- For the icons at the bottom of the page -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
-
 <body>
-    <h1>Welcome to My CS180 Portfolio!</h1>
-    <h3>By Joey-Tai Phung</h3>
-    <ul>
-        <li><a href="./CS180Project0/index.html">Project 0: Becoming Friends with Your Camera </a></li>
-        <li><a href="./CS180Project1/index.html">Project 1: Prokudin-Gorskii's Color Photography</a></li>
-        <li><a href="./CS180Project2/index.html">Project 2: Fun with Filters and Frequencies!</a></li>
-        <li><a href="./CS180Project3/index.html">Project 3: Panorama Stitching</a></li>
-        <li><a href="./CS180Project4/index.html">Project 4: Neural Radiance Fields</a></li>
-        <li><a href="./CS180Project5/index.html">Project 5: Fun with Diffusion</a></li>
-    </ul>
+    <nav>
+        <ul>
+            <li><a href="index.html" class="active">Home</a></li>
+            <li><a href="CS180/index.html">Projects</a></li>
+            <li><a href="assets/Resume Joey-Tai Phung.pdf" target="_blank">Resume</a></li>
+        </ul>
+    </nav>
+
+    <img src="assets/headshot.png" class="profile-pic">
+
+    <h1>Joey-Tai Phung</h1>
+
+    <p class="bio">
+        Hi, I’m Joey. I am in my final semester at UC Berkeley, majoring in Electrical Engineering and Computer Sciences. I am passionate about systems programming, low-level development, and computer security, with a strong interest in working close to the hardware and exploring embedded systems. I enjoy tackling systems-level challenges that require both technical depth and creative problem-solving. In my free time, I like to watch movies, play board games, run, hike, and enjoy good food.
+    </p>
+
+    <div class="socials">
+        <a href="https://www.linkedin.com/in/joeyphung/" target="_blank">
+            <i class="fab fa-linkedin"></i>
+        </a>
+        <a href="https://github.com/joeyphung" target="_blank">
+            <i class="fab fa-github"></i>
+        </a>
+        <a href="mailto:jphung@berkeley.edu">
+            <i class="fas fa-envelope"></i>
+        </a>
+    </div>
+
+
+    <!-- Show coursework -->
+     
+
+    <!-- Add projects -->
 </body>
 
 </html>

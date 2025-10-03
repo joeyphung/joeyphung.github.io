@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- This shows up in the browser tab  -->
+    <title>CS 180 Project 2</title>
+
+    <!--
+        body: applies to the whole page, margin adds space around the page edges
+            margin adds space around the page edges
+    -->
+    <style>
+        body {
+            font-family: Arial, sans-serif; /* Sets the font to one of these */
+            margin: 40px;
+        }
+
+        /* Indents any paragraph and bullet points slightly */
+        p {
+            margin: 0 2em 0 2em;
+        }
+
+        ul {
+            margin: 0 2em 0 2em;
+        }
+
+        code {
+            font-family: "JetBrains Mono", "Consolas", monospace; /* Sets the font to one of these */
+            padding: 0.05em 0.1em; /* Adds internal padding to the code block */
+            border: 1px solid #ddd; /* Adds a border to the code block*/
+        }
+        
+        img {
+            max-width: 100%;   /* don’t overflow container*/
+            width: 100%;       /* So images fill their containers */
+            height: auto;      /* keeps aspect ratio */
+        }
+        
+        /* For smaller images that shouldn't be blurred */
+        .img-small {
+            image-rendering: pixelated; /* Prevents the image from getting blurred */
+            width: 200px;               /* fixed width for the image */
+        }
+
+        /* To force specific images larger */
+        .img-large {
+            width: 500px;          /* fixed width for the image */
+        }
+        figure:has(> .img-large) { /* selects any element with the img-large class and changes its attributes*/
+            max-width: 500px;      /* Allows img-large images to be up to 500px */
+        }
+
+        /* Used for images in a row, class of div */
+        .image-row {
+            display: flex;                  
+            flex-wrap: nowrap;             /* keep them on the same row */
+            gap: 25px;                     /* Gap between figures */
+            justify-content: center;       /* center the row */
+            margin: 25px 100px 25px 100px; /* spacing between container and everything else */
+        }
+
+        .img-bordered {
+            border: 5px solid black;   /* thickness + color */
+            border-radius: 8px;        /* rounded corners */
+            padding: 0px;              /* space between img and border */
+        }
+
+        /* For images with captions, used inside an image-row */
+        figure {
+            flex: 1 1 300px;         /* The 1 1 allows the image to grow or shrink, images start at 300px */
+            max-width: 300px;        /* Caps the containers width */
+            margin: 0px;             /* Gets rid of the margin around the images so that gap in image-row can set it  */
+            text-align: center;      /* centers captions below each image */
+            min-width: 0             /* Allows images to stay the same size when they shrink */
+        }
+
+    </style>
+
+    <!-- Allows for latex -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+
+<body>
+    <h1>CS 180 Project 2: Fun with Filters and Frequencies!</h1>
+    <a href="../index.html">← Back to Home</a> 
+
+    <div>
+        <h3>Introduction</h3>
+            <p>
+                This project explores fundamental concepts in computer vision through filters and frequency-based techniques. In the first part, I implemented convolutions from scratch and applied finite difference and Gaussian filters to detect edges and compute image gradients. I also visualized gradient orientations in HSV space. In the second part, I experimented with applications such as sharpening images using unsharp masking, creating hybrid images that reveal different content depending on viewing distance, and performing multi-resolution blending with Gaussian and Laplacian stacks. These tasks highlighted how filters can isolate frequency components, enhance details, and blend images seamlessly, bridging mathematical operations with visually compelling results.
+            </p>
+    </div>
+
+    
+
+    <div>
+        <h2>Part 1: Fun with Filters</h2>
+
+        <h3>Part 1.1: Convolutions from Scratch!</h3>
+
+        <p>
+        In this section, I implement four-loop and two-loop convolutions by hand. Both the four-loop and two-loop convolution implementations work by sliding a flipped kernel over the padded image and computing a dot product at each position. The difference lies in how this dot product is calculated:
+        </p>
+        
+        <ul>
+            <li>The four-loop version uses two nested loops to explicitly multiply and sum values.</li>
+            <li>The two-loop version uses NumPy's elementwise multiplication along with <code>np.sum()</code>.</li>
+        </ul>
+
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/1.1/four_loop.png" class="img-large">
+                <figcaption>Four Loop Code</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/1.1/two_loop.png" class="img-large">
+                <figcaption>Two Loop Code</figcaption>
+            </figure>
+        </div>
+
+        
+
+        <h3>Part 1.2: Finite Difference Operator</h3>
+
+
+    </div>
+
+</body>
+</html>
