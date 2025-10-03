@@ -17,7 +17,7 @@
             padding: 2em;
             margin: 0 auto;
             text-align: center;
-            border: 1px solid #e0e0e0;
+            border: 3px solid #ddd;
             transition: transform 0.2s linear;
         }
 
@@ -25,21 +25,33 @@
             transform: translateY(-7px);
         }
 
+        .project h2 {
+            margin: 0 0 0.5em 0;
+        }
+
+        .project_img {
+            max-width: 200px;
+            max-height: 200px;
+            margin: 0px 0px 0.5em 0px;
+        }      
+
         .project_description {
-            margin: 0 0 0 0;
+            margin: 0 0 0.5em 0;
         }
 
         .project_stack {
             list-style-type: none;      /* Removes default bullet points */
             padding: 0;                 /* remove default ul padding */
+            margin: 0 0 0.5em 0; /* gap to links */
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
+            font-weight: bold; 
         }
 
         .project_stack-item {
             font-size: 1rem;
-            margin: 0.5rem;
+            margin: 0 0.5rem; /* vertical | horizontal */
         }
 
         .project_link {                     
@@ -61,11 +73,7 @@
             color: #0073b1;             /* Color for when the icon is hovered over */
         }                  
 
-        .project_img {
-            max-width: 200px;
-            max-height: 200px;
-            margin: 0px 0px 1em 0px;
-        }            
+      
 
     </style>
         <link rel="stylesheet" href="/assets/style.css">
@@ -90,7 +98,7 @@
                 <h2>PintOS</h2>
                 <img src="/assets/cs162bean.png" class="project_img">
                 <p class="project_description">
-                    Built an instructional operating system in C, implementing multithreading and synchronization, user program execution with system calls, and a full-featured file system.
+                    Built an instructional operating system, implementing multithreading and synchronization, user program execution with system calls, and a full-featured file system.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">C</li>
@@ -100,7 +108,7 @@
             <div class="project">
                 <h2>A Secure File Sharing System</h2>
                 <p class="project_description">
-                    Developed a secure file sharing system in Go, implementing user authentication, encryption, access control, and secure data storage to ensure confidentiality and integrity.
+                    Developed a secure file sharing system, implementing user authentication, encryption, access control, and secure data storage to ensure confidentiality and integrity.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">Go</li>
@@ -111,7 +119,7 @@
                 <h2>Build Your Own World</h2>
                 <img src="/assets/buildyourownworld.png" class="project_img">
                 <p class="project_description">
-                    Designed and implemented a 2D tile-based game world in Java, featuring procedural generation with Delaunay triangulation, interactive gameplay mechanics, and object-oriented architecture.
+                    Designed and implemented a 2D tile-based game world, featuring procedural generation with Delaunay triangulation, interactive gameplay mechanics, and object-oriented architecture.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">Java</li>
@@ -126,7 +134,7 @@
                 <h2>Chinese Checkers Pro</h2>
                 <img src="/assets/chinesecheckerspro.jpg" class="project_img">
                 <p class="project_description">
-                    Implemented multithreading and file system capabilities for the instructional operating system PintOS
+                    Developed a Python-based Chinese Checkers system where a Sawyer robot uses computer vision and AI (including Minimax and Alpha-Beta pruning) to autonomously play against a human, accurately detecting, picking up, and placing pieces on the board.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">Python</li>
@@ -145,7 +153,7 @@
             <div class="project">
                 <h2>Shell</h2>
                 <p class="project_description">
-                    Implemented a Unix-like shell in C, supporting process creation, command execution, I/O redirection, and job control with proper synchronization.
+                    Implemented a Unix-like shell, supporting process creation, command execution, I/O redirection, and job control with proper synchronization.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">C</li>
@@ -156,7 +164,7 @@
                 <h2>Snek</h2>
                 <img src="/assets/snek.png" class="project_img">
                 <p class="project_description">
-                    Built a snake game in C, implementing game logic, dynamic memory management, and low-level data structures to handle real-time user interaction.
+                    Built a snake game, implementing game logic, dynamic memory management, and low-level data structures to handle real-time user interaction.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">C</li>
@@ -170,7 +178,7 @@
                 <h2>Map Reduce</h2>
                 <img src="/assets/mapreduce.png" class="project_img">
                 <p class="project_description">
-                    Implemented a MapReduce framework in C, enabling parallel data processing with worker coordination, fault tolerance, and efficient task scheduling.
+                    Implemented a MapReduce framework, enabling parallel data processing with worker coordination, fault tolerance, and efficient task scheduling.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">C</li>
@@ -181,7 +189,7 @@
                 <h2>CS61CPU</h2>
                 <img src="/assets/cs61cpu.png" class="project_img">
                 <p class="project_description">
-                    Designed and implemented a simple CPU in Logisim to handle RISC-V instructions, building the instruction set architecture, control logic, datapath, and support for arithmetic, memory, and branching operations.
+                    Designed and implemented a simple CPU to handle RISC-V instructions, building the instruction set architecture, control logic, datapath, and support for arithmetic, memory, and branching operations.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">Logisim</li>
@@ -192,7 +200,7 @@
                 <h2>2048</h2>
                 <img src="/assets/2048.png" class="project_img">
                 <p class="project_description">
-                    Developed a fully functional 2048 game in Java, implementing game mechanics, tile merging logic, and a responsive user interface with object-oriented design principles.
+                    Developed a fully functional 2048 game, implementing game mechanics, tile merging logic, and a responsive user interface with object-oriented design principles.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">Java</li>
@@ -205,7 +213,7 @@
                 <h2>Scheme Interpreter</h2>
                 <img src="/assets/scheme.png" class="project_img">
                 <p class="project_description">
-                    I built a Scheme interpreter in Python from scratch, implementing symbol lookup, special forms (like define, lambda, quote, begin), user-defined procedures, and both lexical and dynamic scoping (via the lambda and mu forms).
+                    I built a Scheme interpreter, implementing symbol lookup, special forms (like define, lambda, quote, begin), user-defined procedures, and both lexical and dynamic scoping (via the lambda and mu forms).
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">Python</li>
