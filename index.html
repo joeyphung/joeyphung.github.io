@@ -2,19 +2,13 @@
 <html>
 <head>
     <!-- This shows up in the browser tab  -->
-    <title>My Portfolio</title>
+    <title>Home</title>
 
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0px;                   /* Margin around the entire page */
             text-align: center;            /* Center all text */
-        }                                  
-
-        .profile-pic {                     
-            width: 300px;                  
-            height: 300px;                 
-            margin-top: 40px;               /* Margin above the image */
         }                                  
 
         nav {                              
@@ -55,12 +49,138 @@
             gap: 30px;         /* Put 30px space between nav items */
             margin: 0;         /* Remove default margin around the list */
             padding: 0;        /* Remove default padding */
-        }                     
-
+        }                 
+        
+        .profile-pic {                     
+            width: 300px;                  
+            height: 300px;                 
+            margin-top: 40px;               /* Margin above the image */
+        }     
+        
         .bio {
-            max-width: 400px; /* Set a max width for the bio */
+            max-width: 500px; /* Set a max width for the bio */
             margin: 0 auto;   /* Center the paragraph block horizontally */
             line-height: 1.5; /* Increases line spacing */
+        }       
+
+        .timeline-container {
+            border: 3px solid #000000;    /* dark border around the whole table */
+            border-radius: 20px;            /* rounded corners */
+            padding: 20px;                  /* Oadding from contents of box */
+            margin: 40px auto;              /* vertical spacing + auto centered */
+            width: fit-content;             /* shrink container to fit its contents */
+            position: relative;             /* allows absolutely positioned children (header/footer) */
+        }
+
+        .timeline {
+            display: flex;                  /* lay out semesters horizontally */
+            justify-content: center;        /* center all semesters */
+            margin-top: 25px;               /* pushes schedule down from header */
+            gap: 20px;                      /* space between semesters */
+        }
+
+        .semester {
+            text-align: center;             /* center text inside each semester column */
+        }
+
+        .semester h2 {
+            font-size: 1.2em;               /* slightly larger text for semester title */
+        }
+
+        .course {
+            width: 130px;                   /* fixed width for consistent blocks */
+            padding: 10px;                  /* space inside block */
+            margin: 10px 0;                 /* vertical spacing between courses */
+            border-radius: 10px;             /* rounded corners */
+            font-weight: bold;              /* bolder text */
+            color: white;                 /* text color */
+            text-align: center;             /* center the course text */
+            cursor: pointer;                /* shows pointer on hover */
+            position: relative;             /* needed for tooltip positioning */
+        }
+
+
+        /* Handles the arrow */
+        .course::before {
+            content: "";
+            position: absolute;
+            bottom: 90%;                    /* places arrow above the course */
+            left: 50%;                      /* horizontally centered */
+            transform: translateX(-50%);    /* correct centering */
+            border-width: 6px;              /* triangle size */
+            border-style: solid;
+            border-color: #333 transparent transparent transparent; /* downward triangle */
+            opacity: 0;                     /* hidden by default */
+            transition: opacity 0.15s ease; /* fade effect */
+        }
+
+        /* Handles the text box */
+        .course::after {
+            content: attr(data-tooltip);    /* use tooltip text from attribute */
+            position: absolute;
+            bottom: 120%;                   /* place above course */
+            left: 50%;                      /* center horizontally */
+            transform: translateX(-50%);    /* adjust for true centering */
+            background: #333;               /* tooltip background */
+            color: #fff;                    /* tooltip text color */
+            padding: 6px 10px;              /* padding inside tooltip */
+            border-radius: 6px;             /* rounded tooltip */
+            white-space: nowrap;            /* prevent wrapping */
+            font-size: 0.85em;              /* slightly smaller text */
+            opacity: 0;                     /* hidden by default */
+            pointer-events: none;           /* avoids hover flicker issue */
+            transition: opacity 0.15s ease; /* smooth fade-in/out */
+            z-index: 10;                    /* keep tooltip above */
+        }
+
+        /* Show tooltip on hover */
+        /* Before and after are used here to seperate the two objects not because they show up in a different order */
+        .course:hover::after,
+        .course:hover::before {
+            opacity: 1;
+        }
+
+        /* Color categories */
+        .eecs { background: rgb(218, 181, 18); }
+        .breadth { background: #162967; }
+        .decal { background: #237939; }
+
+        /* Legend */
+        .legend {                   
+            display: flex;           /* arrange legend items horizontally */
+            justify-content: center; /* center legend */
+            margin: 30px;            /* spacing around legend */
+            gap: 20px;               /* space between items */
+        }                           
+
+        .legend-item {              
+            display: flex;           /* align box + label in a row */
+            align-items: center;     /* vertically center */
+            gap: 5px;                /* small gap between box & text */
+        }                           
+
+        .legend-box {               
+            width: 20px;            
+            height: 20px;           
+            border-radius: 5px;      /* rounded corners for legend boxes */
+        }                           
+
+        /* Header inside table box */
+        .timeline-header {          
+            position: absolute;      /* fixed inside container */
+            top: 15px;              
+            left: 15px;             
+            font-size: 1.6em;        /* larger text */
+            font-weight: bold;       /* emphasize heading */
+        }                           
+
+        /* Footer inside table box */
+        .timeline-footer {          
+            position: absolute;      /* fixed inside container */
+            bottom: 15px;           
+            left: 15px;             
+            color: #555;             /* lighter gray */
+            font-style: italic;      /* styled like a note */
         }
 
         .socials {                     
@@ -84,7 +204,7 @@
 
         .socials a:hover {             
             transform: scale(1.1);      /* Icons grow larger on hover */
-        }                              
+        }     
 
     </style>
 
@@ -109,6 +229,76 @@
         Hi, I’m Joey. I am in my final semester at UC Berkeley, majoring in Electrical Engineering and Computer Sciences. I am passionate about systems programming, low-level development, and computer security, with a strong interest in working close to the hardware and exploring embedded systems. I enjoy tackling systems-level challenges that require both technical depth and creative problem-solving. In my free time, I like to watch movies, play board games, run, hike, and enjoy good food.
     </p>
 
+    <!-- Show coursework -->
+    <div class="timeline-container">
+        <div class="timeline-header">
+            Coursework
+        </div>
+
+        <div class="timeline">
+            <div class="semester">
+                <h2>Fall 23</h2>
+                <div class="course eecs" data-tooltip="Structure and Interpretation of Computer Programs">CS 61A</div>
+                <div class="course eecs" data-tooltip="Designing Information Devices and Systems I ">EECS 16A</div>
+                <div class="course breadth" data-tooltip="Energy and Society ">ENERES C100</div>
+                <div class="course decal" data-tooltip="Micromouse">ELENG 198</div>
+            </div>
+
+            <div class="semester">
+                <h2>Spring 24</h2>
+                <div class="course eecs" data-tooltip="Data Structures">CS 61B</div>
+                <div class="course eecs" data-tooltip="Discrete Mathematics and Probability Theory ">CS 70</div>
+                <div class="course eecs" data-tooltip="Designing Information Devices and Systems II ">EECS 16B</div>
+                <div class="course breadth" data-tooltip="Islamophobia and Constructing Otherness">ASAMST 132AC</div>
+            </div>
+
+            <div class="semester">
+                <h2>Fall 24</h2>
+                <div class="course eecs" data-tooltip="	Signals and Systems">EE 120</div>
+                <div class="course eecs" data-tooltip="Introduction to Robotics">EECS C106A</div>
+                <div class="course eecs" data-tooltip="Probability and Random Processes">EECS 126</div>
+                <div class="course eecs" data-tooltip="Optimization Models in Engineering">EECS 127</div>
+            </div>
+
+            <div class="semester">
+                <h2>Spring 25</h2>
+                <div class="course eecs" data-tooltip="Great Ideas of Computer Architecture (Machine Structures)">CS 61C</div>
+                <div class="course eecs" data-tooltip="Operating Systems and System Programming">CS 162</div>
+                <div class="course eecs" data-tooltip="Introduction to Machine Learning">CS 189</div>
+                <div class="course eecs" data-tooltip="Designing, Visualizing and Understanding Deep Neural Networks">CS 182</div>
+            </div>
+
+            <div class="semester">
+                <h2>Summer 25</h2>
+                <div class="course eecs" data-tooltip="Computer Security">CS 161</div>
+                <div class="course eecs" data-tooltip="Introduction to the Internet: Architecture and Protocols">CS 168</div>
+            </div>
+
+            <div class="semester">
+                <h2>Fall 25</h2>
+                <div class="course eecs" data-tooltip="Programming Languages and Compilers">CS 164</div>
+                <div class="course eecs" data-tooltip="Efficient Algorithms and Intractable Problems">CS 170</div>
+                <div class="course eecs" data-tooltip="Intro to Computer Vision and Computational Photography">CS 180</div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box eecs"></div> EECS
+            </div>
+            <div class="legend-item">
+                <div class="legend-box breadth"></div> Breadth
+            </div>
+            <div class="legend-item">
+                <div class="legend-box decal"></div> Decal
+            </div>
+        </div>
+
+        <div class="timeline-footer">
+            This table was inspired by <a href="https://www.bedouch.net/"> this portfolio.
+        </div>
+    </div>
+
     <div class="socials">
         <a href="https://www.linkedin.com/in/joeyphung/" target="_blank">
             <i class="fab fa-linkedin"></i>
@@ -120,10 +310,6 @@
             <i class="fas fa-envelope"></i>
         </a>
     </div>
-
-
-    <!-- Show coursework -->
-     
 
     <!-- Add projects -->
 </body>
