@@ -1,56 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <!-- This shows up in the browser tab  -->
     <title>Home</title>
 
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 0px;                   /* Margin around the entire page */
             text-align: center;            /* Center all text */
-        }                                  
+        }     
 
-        nav {                              
-            width: 100%;                   
-            height: 70px;                   /* Height of the nav bar */
-            display: flex;                  /* Use flexbox layout*/
-            justify-content: flex-end;      /* Align items to the right side of the nav bar */
-            align-items: center;            /* Vertically center nav items*/
-            padding: 0 40px;                /* Left/right padding to the nav bar */
-            box-sizing: border-box;         /* Include padding in the total width calculaiton */
-            background-color: #f8f8f8;     
-            border-bottom: 1px solid #ddd; 
-            position: sticky;               /* Sticks to the top when scrolling */
-            top: 0;                         /* Position relative to the top */
-            z-index: 100;                   /* Ensure nav bar stays layered over other elements */
-        }                                            
-                                                     
-        nav a {                    
-            text-decoration: none;  /* Remove the default underline from links */
-            color: #272727;         /* Set link text color to different color */
-            font-weight: 500;       /* Make the text slightly thicker than normal (but not bold) */
-            padding: 5px 10px;      /* Add space around the link text (top/bottom = 5px, left/right = 10px) */
-            transition: color 0.2s; /* Animate the color change */
-            font-size: 1.2rem;      /* Make text larger */
-        }                                            
-
-        nav a:hover {         
-            color: #0073b1;      /* Change text color to blue when hovered */
-        }                     
-
-        nav a.active {        
-            font-weight: bold; /* Make the "active" link (the current page) bold */
-        }               
-
-        nav ul {              
-            list-style: none;  /* Remove bullet points from nav list */
-            display: flex;     /* Lay out nav items horizontally */
-            gap: 30px;         /* Put 30px space between nav items */
-            margin: 0;         /* Remove default margin around the list */
-            padding: 0;        /* Remove default padding */
-        }                 
-        
         .profile-pic {                     
             width: 300px;                  
             height: 300px;                 
@@ -66,7 +23,7 @@
         .timeline-container {
             border: 3px solid #000000;    /* dark border around the whole table */
             border-radius: 20px;            /* rounded corners */
-            padding: 20px;                  /* Oadding from contents of box */
+            padding: 30px;                  /* Padding from contents of box */
             margin: 40px auto;              /* vertical spacing + auto centered */
             width: fit-content;             /* shrink container to fit its contents */
             position: relative;             /* allows absolutely positioned children (header/footer) */
@@ -88,17 +45,17 @@
         }
 
         .course {
-            width: 130px;                   /* fixed width for consistent blocks */
+            width: 125px;                   /* fixed width for consistent blocks */
             padding: 10px;                  /* space inside block */
             margin: 10px 0;                 /* vertical spacing between courses */
             border-radius: 10px;             /* rounded corners */
             font-weight: bold;              /* bolder text */
+            font-size: 1em;               /* slightly larger text for semester title */
             color: white;                 /* text color */
             text-align: center;             /* center the course text */
             cursor: pointer;                /* shows pointer on hover */
             position: relative;             /* needed for tooltip positioning */
         }
-
 
         /* Handles the arrow */
         .course::before {
@@ -205,8 +162,9 @@
         .socials a:hover {             
             transform: scale(1.1);      /* Icons grow larger on hover */
         }     
-
     </style>
+    
+    <link rel="stylesheet" href="/assets/style.css">
 
     <!-- For the icons at the bottom of the page -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -215,9 +173,9 @@
 <body>
     <nav>
         <ul>
-            <li><a href="index.html" class="active">Home</a></li>
-            <li><a href="CS180/index.html">Projects</a></li>
-            <li><a href="assets/Resume Joey-Tai Phung.pdf" target="_blank">Resume</a></li>
+            <li><a href="/index.html" class="active">Home</a></li>
+            <li><a href="/Projects/index.html">Projects</a></li>
+            <li><a href="/assets/Resume Joey-Tai Phung.pdf" target="_blank">Resume</a></li>
         </ul>
     </nav>
 

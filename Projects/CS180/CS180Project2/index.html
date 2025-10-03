@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CS 180 Project 2</title>
+
+    <style>
+        /* Indents any paragraph and bullet points slightly */
+        p {
+            margin: 0 2em 0 2em;
+        }
+
+        ul {
+            margin: 0 2em 0 2em;
+        }
+        
+        img {
+            max-width: 100%;   /* don’t overflow container*/
+            width: 100%;       /* So images fill their containers */
+            height: auto;      /* keeps aspect ratio */
+        }
+        
+        /* For smaller images that shouldn't be blurred */
+        .img-small {
+            image-rendering: pixelated; /* Prevents the image from getting blurred */
+            width: 200px;               /* fixed width for the image */
+        }
+
+        /* To force specific images larger */
+        .img-large {
+            width: 500px;          /* fixed width for the image */
+        }
+        figure:has(> .img-large) { /* selects any element with the img-large class and changes its attributes*/
+            max-width: 500px;      /* Allows img-large images to be up to 500px */
+        }
+
+        /* Used for images in a row, class of div */
+        .image-row {
+            display: flex;                  
+            flex-wrap: nowrap;             /* keep them on the same row */
+            gap: 25px;                     /* Gap between figures */
+            justify-content: center;       /* center the row */
+            margin: 25px 100px 25px 100px; /* spacing between container and everything else */
+        }
+
+        .img-bordered {
+            border: 5px solid black;   /* thickness + color */
+            border-radius: 8px;        /* rounded corners */
+            padding: 0px;              /* space between img and border */
+        }
+
+        /* For images with captions, used inside an image-row */
+        figure {
+            flex: 1 1 300px;         /* The 1 1 allows the image to grow or shrink, images start at 300px */
+            max-width: 300px;        /* Caps the containers width */
+            margin: 0px;             /* Gets rid of the margin around the images so that gap in image-row can set it  */
+            text-align: center;      /* centers captions below each image */
+            min-width: 0             /* Allows images to stay the same size when they shrink */
+        }
+
+    </style>
+    <link rel="stylesheet" href="/assets/style.css">
+
+    <!-- Allows for latex -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/index.html">Home</a></li>
+            <li><a href="/Projects/index.html">Projects</a></li>
+            <li><a href="/assets/Resume Joey-Tai Phung.pdf" target="_blank">Resume</a></li>
+        </ul>
+    </nav>
+
+    <div class="text">
+        <a href="../index.html">← Back to CS 180 Projects</a> 
+        <h1>CS 180 Project 2: Fun with Filters and Frequencies!</h1>    
+
+        <div>
+            <h3>Introduction</h3>
+                <p>
+                    This project explores fundamental concepts in computer vision through filters and frequency-based techniques. In the first part, I implemented convolutions from scratch and applied finite difference and Gaussian filters to detect edges and compute image gradients. I also visualized gradient orientations in HSV space. In the second part, I experimented with applications such as sharpening images using unsharp masking, creating hybrid images that reveal different content depending on viewing distance, and performing multi-resolution blending with Gaussian and Laplacian stacks. These tasks highlighted how filters can isolate frequency components, enhance details, and blend images seamlessly, bridging mathematical operations with visually compelling results.
+                </p>
+        </div>
+
+        
+
+        <div>
+            <h2>Part 1: Fun with Filters</h2>
+
+            <h3>Part 1.1: Convolutions from Scratch!</h3>
+
+            <p>
+            In this section, I implement four-loop and two-loop convolutions by hand. Both the four-loop and two-loop convolution implementations work by sliding a flipped kernel over the padded image and computing a dot product at each position. The difference lies in how this dot product is calculated:
+            </p>
+            
+            <ul>
+                <li>The four-loop version uses two nested loops to explicitly multiply and sum values.</li>
+                <li>The two-loop version uses NumPy's elementwise multiplication along with <code>np.sum()</code>.</li>
+            </ul>
+
+            <p>
+            To keep the convolution output the same size as the original image, zero-padding is applied. For an \(n \times n\) image with padding \(p\) and a \(k \times k\) kernel, the output shape is \( (n + 2p - k + 1) \times (n + 2p - k + 1) \). Setting \(p = (k - 1) // 2\) ensures the output shape is \(n \times n\). The zero padding is applied to the image using <code>np.pad()</code>.
+
+            Although both implementations give the same results as <code>scipy.signal.convolve2d()</code>, they are much slower due to explicit looping and the lack of low-level optimizations. Specifically, the SciPy implementation runs the fastest followed by the two loop and then the four loop. Below are snippets of the convolution code, along with a headshot of myself and the same image convolved using a box filter and the two finite difference operators.
+            </p>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/1.1/four_loop.png" class="img-large">
+                    <figcaption>Four Loop Code</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/1.1/two_loop.png" class="img-large">
+                    <figcaption>Two Loop Code</figcaption>
+                </figure>
+            </div>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/1.1/headshot.JPG">
+                    <figcaption>Original Image</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/1.1/box.jpg">
+                    <figcaption>Box Filter</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/1.1/Dx.jpg">
+                    <figcaption>Dx Operator</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/1.1/Dy.jpg">
+                    <figcaption>Dy Operator</figcaption>
+                </figure>
+            </div>
+            
+
+            <h3>Part 1.2: Finite Difference Operator</h3>
+
+            <p>
+                In this section, I work with the finite difference operators Dx and Dy. To get the partial derivative in terms of x and y, the images are convolved with the Dx and Dy operators resulting in the images below.
+                \[
+                D_x = \begin{bmatrix} 1 & 0 & -1 \end{bmatrix},
+                \quad
+                D_y = \begin{bmatrix} 1 \\ 0 \\ -1 \end{bmatrix}
+                \]
+            </p>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/1.2/finite_diff_partial_x.jpg">
+                    <figcaption>Partial Derivative in x</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/1.2/finite_diff_partial_y.jpg">
+                    <figcaption>Partial Derivative in y</figcaption>
+                </figure>
+            </div>
+
+            <p>
+            Next, the gradient magnitude image is calculated as 
+            </p>
+            
+            \[
+            \| \nabla f \| = 
+            \sqrt{\left(\frac{\partial f}{\partial x}^2\right) + 
+                \left(\frac{\partial f}{\partial y}\right)^2}
+            \]
+            
+            <p>
+            To binarize the image, a threshold is applied: pixels above the threshold are set to maximum brightness, while those below are set to minimum brightness. The threshold was set to 0.2, noting that all pixel values have been normalized to the range \([0, 1]\). Looking at the binarized image, there is noticeable noise near the bottom. Increasing the threshold reduces this noise, but at the cost of losing useful edge information elsewhere. A better technique for preserving edges while suppressing noise will be introduced in the next section.
+                
+            <br><br>
+            This overall process—computing partial derivatives, forming the gradient magnitude, and binarizing the result—will be referred to as the <b>finite difference algorithm</b> in later sections.
+            </p>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/1.2/finite_diff_gradient_mag.jpg">
+                    <figcaption>Gradient Magnitude</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/1.2/finite_diff_binarized.jpg">
+                    <figcaption>Binarized / Edge Image</figcaption>
+                </figure>
+            </div>
+
+            <h3>Part 1.3: Derivative of Gaussian (DoG) Filter</h3>
+
+            <p>
+            I first attempt to improve the final binarized image by blurring the original image before feeding it into the finite difference algorithm. The 2D Gaussian filter is constructed using <code>cv.getGaussianKernel(ksize, sigma)</code> with an appropriate kernel size and sigma value. Since this function only returns a 1D vector, I take its outer product with itself to obtain a 2D Gaussian kernel. Empirically, I found that setting the kernel size to about five times the sigma captures all the meaningful information of the Gaussian while avoiding unnecessary computation from including too many near-zero values. Finally, I chose the threshold value to be 0.25 and the kernel size was set to 15 and the standard deviation \(\sigma\) to 3. Shown below are the 2D Gaussian filter, the smoothed image, and the result of applying the finite difference algorithm to the smoothed image.
+            </p>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/1.3/gaussian.jpg" class="img-small">
+                    <figcaption>Gaussian Kernel</figcaption>
+                </figure>
+            </div>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/1.3/smoothed_img.jpg">
+                    <figcaption>Smoothed Image</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/1.3/smoothed_binarized_img.jpg">
+                    <figcaption>Smoothed Binarized Image</figcaption>
+                </figure>
+            </div>
+
+            <p>
+            Can this operation be done in fewer convolution steps? The answer is yes—well, sort of. A neat property of convolution is that it is commutative. This means that instead of first applying a Gaussian blurring filter and then the finite difference operators, I can precompute a <b>Derivative of Gaussian (DoG) filter</b>, which is simply the convolution of a Gaussian filter with a finite difference operator. Using this approach, when I run the finite difference algorithm, I replace the plain finite difference operators with the DoG filters, which already include smoothing. Shown below are the DoG filters and the final binarized image obtained from this modified finite difference operation. Notice that the result of smoothing beforehand and using the DoG filters is effectively the same! Compared to the previous section, these images are less noisy, with few or no specks at the bottom.
+            </p>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/1.3/DoG_X.jpg" class="img-small">
+                    <figcaption>DoG x Kernel</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/1.3/DoG_Y.jpg" class="img-small">
+                    <figcaption>DoG y Kernel</figcaption>
+                </figure>
+            </div>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/1.3/DoG_binarized.jpg">
+                    <figcaption>DoG Binarized Image</figcaption>
+                </figure>
+            </div>
+
+
+            <h3>Bells & Whistles</h3>
+
+            <p>
+            For this section, the image gradient orientations were computed. I obtained the partial derivatives of the image in the x and y directions using the finite difference operators. I then calculated the gradient magnitude (as shown before) and the gradient orientation as
+            </p>
+            \[  
+                \theta = 
+                \arctan{ 
+                \left(
+                \frac{\partial f}{\partial y} / 
+                \frac{\partial f}{\partial x}
+                \right)} 
+            \] 
+            <p>
+            Next, I formed an image by constructing its HSV values. The hue was based on the gradient orientation, but since hue ranges from 0 to 1, I mapped the result of the arctangent function from \([-\pi, \pi]\) to \([0, 1]\). The saturation was set to 1 everywhere for a more vibrant image. Finally, the value channel of each pixel was set according to its gradient magnitude. Because gradient magnitude values can exceed 1, I normalized the entire matrix by dividing by its maximum, mapping values into the range \([0, 1]\). The HSV layers were then stacked using <code>np.stack()</code> and converted to an image with <code>hsv_to_rgb()</code>. The resulting image shows the gradient orientations with brightness set proportional to the gradient magnitude.
+            </p>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/bells/remington.jpg">
+                    <figcaption>remington.jpg</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/bells/image_gradient.jpg">
+                    <figcaption>Image Gradient Orientation</figcaption>
+                </figure>
+            </div>
+            
+        </div>
+
+        <div>
+            <h2>Part 2: Fun with Frequencies!</h2>
+
+            <h3>Part 2.1: Image "Sharpening"</h3>
+
+            <p>
+                The sharpening technique was first applied to an image of the Taj Mahal. Sharpening (or blurring) a color image is done by applying the operation independently to each of its channels. For grayscale images, there is only one channel, but for RGB or BGR images there are three. The sharpening process involves two main steps. First, the low-frequency components are obtained by convolving the image with a Gaussian kernel (here, the kernel size was set to 15 and the standard deviation \(\sigma\) to 3). The high-frequency components are then computed by subtracting the low-frequency image from the original image. Finally, the sharpened image is formed as \( \text{sharpened_img} = \text{img} + \alpha \cdot \text{high_freq} \). Because both blurring and sharpening can push pixel values outside the range [0,1], the results are clipped to this range. Clipping was chosen over normalization in order to preserve the relative contrast of the image. Shown below is the original picture of the Taj Mahal as well as its low-frequency and high-frequency components.
+            </p>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.1/taj.jpg">
+                    <figcaption>Original Taj</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.1/low_freq_taj.jpg">
+                    <figcaption>Low-frequency Taj</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.1/high_freq_taj.jpg">
+                    <figcaption>High-frequency Taj</figcaption>
+                </figure>
+            </div>
+
+            <p>
+                Now shown here is the sharpening operation applied to the Taj Mahal with different values for alpha. It can be seen that at higher values of alpha, the image gets more distorted and appears to be "deep fried".
+            </p>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.1/sharpened_img_0.5.jpg">
+                    <figcaption>\(\alpha = 0.5\)</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.1/sharpened_img_1.jpg">
+                    <figcaption>\(\alpha = 1\)</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.1/sharpened_img_5.jpg">
+                    <figcaption>\(\alpha = 5\)</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.1/sharpened_img_10.jpg">
+                    <figcaption>\(\alpha = 10\)</figcaption>
+                </figure>
+            </div>
+
+            <p>
+                Here I start with a regular image, blur it, and then attempt to resharpen it. The same kernels were used for both the blurring and sharpening operations, with a kernel size of 25 and a standard deviation \(\sigma = 5\). For sharpening, I set \(\alpha = 1\). In the next row are the low and high frequency elements of the original image.
+            </p>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.1/sharp.jpg">
+                    <figcaption>Original House</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.1/blurred_img.jpg">
+                    <figcaption>Blurred House</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.1/sharpened_blurred_img.jpg">
+                    <figcaption>Sharpened Blurred House</figcaption>
+                </figure>
+            </div>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.1/low_freq_house.jpg">
+                    <figcaption>Low-frequency House</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.1/high_freq_house.jpg">
+                    <figcaption>High-frequency House</figcaption>
+                </figure>
+            </div>
+
+            <h3>Part 2.2: Hybrid Images</h3>
+
+            <p>
+                In this section, I implement hybrid images following the approach outlined in the SIGGRAPH 2006 <a href="https://web.archive.org/web/20070315210101/http://cvcl.mit.edu/hybrid/OlivaTorralb_Hybrid_Siggraph06.pdf"> paper</a> by Oliva, Torralba, and Schyns. To begin, I aligned the images by selecting two corresponding points on each image. I then applied a low-pass filter to one image and a high-pass filter to the other, producing two filtered versions. Combining these by addition and clipping the result to the range \([0, 1]\) was found to give the best outcome for the hybrid images. For the Derek and Nutmeg hybrid, I used a kernel size of 75 with a standard deviation of \(\sigma = 15\). For Chris Evans and Rdj, I chose a kernel size of 45 with \(\sigma = 9\). For Koupenchan and Pompompurin, I used a smaller kernel size of 25 with \(\sigma = 5\). Below are the results of these hybrid image experiments.
+            </p>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.2/DerekPicture.jpg">
+                    <figcaption>DerekPicture.jpg</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.2/nutmeg.jpg">
+                    <figcaption>nutmeg.jpg</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.2/low_img_DerekPicture.jpg">
+                    <figcaption>Low Frequencies of Derek</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.2/high_img_nutmeg.jpg">
+                    <figcaption>High Frequencies of Nutmeg</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.2/hybrid_img_DerekPicture_nutmeg.jpg">
+                    <figcaption>Hybrid Image of Derek and Nutmeg </figcaption>
+                </figure>
+            </div>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.2/koupenchan.jpg">
+                    <figcaption>koupenchan.jpg</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.2/pompompurin.png">
+                    <figcaption>pompompurin.png</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.2/low_img_koupenchan.jpg">
+                    <figcaption>Low Frequencies of Koupenchan</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.2/high_img_pompompurin.jpg">
+                    <figcaption>High Frequencies of Pompompurin</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.2/hybrid_img_koupenchan_pompompurin.jpg">
+                    <figcaption>Hybrid Image of Koupenchan and Pompompurin </figcaption>
+                </figure>
+            </div>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.2/chris_evans.png">
+                    <figcaption>chris_evans.png</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.2/rdj.png">
+                    <figcaption>rdj.png</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.2/low_img_chris_evans.jpg">
+                    <figcaption>Low Frequencies of Chris Evans</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.2/high_img_rdj.jpg">
+                    <figcaption>High Frequencies of Rdj</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.2/hybrid_img_chris_evans_rdj.jpg">
+                    <figcaption>Hybrid Image of Chris Evans and Rdj </figcaption>
+                </figure>
+            </div>
+
+            <p>
+                In addition to creating hybrid images, I performed frequency analysis on the inputs. To do this, I first converted the images to integers, then to grayscale. I applied <code>np.log(np.abs(np.fft.fftshift(np.fft.fft2(gray_image))))</code> to compute their 2D Fourier transforms. The raw Fourier output is grayscale and may fall outside the \([0, 1]\) range, so I normalized it before applying <code>matplotlib.cm.viridis</code> for visualization. Shown below are the 2D Fourier transforms of the images, along with intermediate results from constructing the hybrid of Chris Evans and Rdj.
+            </p>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.2/fourier_chris_evans.jpg">
+                    <figcaption>Fourier of chris_evans.png</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.2/fourier_rdj.jpg">
+                    <figcaption>Fourier of rdj.png</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.2/fourier_low_chris_evans.jpg">
+                    <figcaption>Fourier of Low Frequencies of Chris Evans</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.2/fourier_high_rdj.jpg">
+                    <figcaption>Fourier of High Frequencies of Rdj</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.2/fourier_chris_evans_rdj.jpg">
+                    <figcaption>Fourier of Hybrid Image</figcaption>
+                </figure>
+            </div>
+
+
+            <h3>Part 2.3: Gaussian and Laplacian Stacks</h3>
+
+            <p>
+                In this part, I recreate the outcomes of Figure 3.42 in <a href="https://www.dropbox.com/s/bzt69u4azxyfpjo/SzeliskiBookDraft_20210828.pdf?dl=0">Szeliski (Ed. 2)</a>, page 167. The first step is to build a Gaussian stack. This begins with a list containing the original image, then repeatedly applying a Gaussian filter to the most recent image and appending the result. Since this is a stack (and not a pyramid), the images are not downsampled at each level. Instead, the effective blur increases with each iteration. I found that choosing \(\sigma = 2^i\), where \(i\) is the current iteration, worked well. For the rest of this assignment, I used a stack depth of \(N = 5\).
+
+                <br><br>
+                Next, I constructed a Laplacian stack. A Laplacian stack is obtained by subtracting successive elements of the Gaussian stack, or more formally:
+                \[
+                \begin{aligned}
+                    \text{lap}[i] &= \text{gauss}[i] - \text{gauss}[i + 1], \quad i \in [0, N-1) \\
+                    \text{lap}[N - 1] &= \text{gauss}[N - 1]
+                \end{aligned}
+                \]
+                The final Gaussian image is included in the Laplacian stack to allow reconstruction of the original image. With both Gaussian and Laplacian stacks prepared, the last component needed to reproduce the "oraple" figure is a mask. This mask determines how the Laplacian stacks of two images blend together. Instead of using a simple half-white, half-black mask (which can lead to harsh transitions), I created a smoother mask. It consists of a fully white region, a fully black region, and a middle gradient constructed using <code>np.linspace()</code> and <code>np.tile()</code>. This smoother transition produces much better blending results. The mask I used is shown below.
+            </p>
+            
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.3/mask.jpg" class="img-bordered">
+                    <figcaption>mask</figcaption>
+                </figure>
+            </div>
+
+            <p>
+                With the mask and the Laplacian stacks of the apple and the orange, I now have everything needed to recreate the figure. Let \(LS_B\) denote the Laplacian stack of the blended image, \(LS_1\) and \(LS_2\) the Laplacian stacks of the two source images, and \(GS_M\) the Gaussian stack of the mask. A Gaussian stack of the mask is used (instead of reusing the same mask across levels) to ensure smooth transitions between Laplacian layers. The blended Laplacian stack is then computed as:
+                \[
+                    LS_B[i] = LS_1[i] \cdot GS_M[i] + LS_2[i] \cdot (1 - GS_M[i])
+                \]
+                Finally, the blended image is reconstructed by summing all layers of its Laplacian stack. This reconstruction process works not only for blended stacks but for any Laplacian stack. The last row of this section shows the reconstructions from the masked Laplacian stacks of the two input images, as well as that of the blended "oraple" image. This technique produces the final blended image in the bottom-right and forms the foundation for the blending results shown in the next section.
+            </p>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.3/masked_lap_stack1_0.jpg">
+                    <figcaption>Apple Lap Stack Level 0, \( LS_1[0] \cdot GS_M[0]\)</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/masked_lap_stack2_0.jpg">
+                    <figcaption>Orange Lap Stack Level 0, \( LS_2[0] \cdot (1 - GS_M[0])\)</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/masked_lap_stack_combined_0.jpg">
+                    <figcaption>Blended Lap Stack Level 0, \( LS_B[0]\)</figcaption>
+                </figure>
+            </div>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.3/masked_lap_stack1_2.jpg">
+                    <figcaption>Apple Lap Stack Level 2, \( LS_1[2] \cdot GS_M[2] \)</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/masked_lap_stack2_2.jpg">
+                    <figcaption>Orange Lap Stack Level 2, \( LS_2[2] \cdot (1 - GS_M[2]) \)</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/masked_lap_stack_combined_2.jpg">
+                    <figcaption>Blended Lap Stack Level 2, \( LS_B[2] \)</figcaption>
+                </figure>
+            </div>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.3/masked_lap_stack1_4.jpg">
+                    <figcaption>Apple Lap Stack Level 4, \( LS_1[4] \cdot GS_M[4] \)</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/masked_lap_stack2_4.jpg">
+                    <figcaption>Orange Lap Stack Level 4, \( LS_2[4] \cdot (1 - GS_M[4]) \)</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/masked_lap_stack_combined_4.jpg">
+                    <figcaption>Blended Lap Stack Level 4, \( LS_B[4] \)</figcaption>
+                </figure>
+            </div>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.3/lap_stack_reconstructed_1.jpg">
+                    <figcaption>Reconstructed Masked Apple</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/lap_stack_reconstructed_2.jpg">
+                    <figcaption>Reconstructed Masked Orange</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/lap_stack_reconstructed_3.jpg">
+                    <figcaption>Reconstructed Oraple</figcaption>
+                </figure>
+            </div>
+
+            <p> Additionally, here are the gaussian and laplacian stacks of the apple and the orange from levels 0 to 4</p>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.3/gauss_stack_apple_0.jpg">
+                    <figcaption>Apple Gauss Stack Level 0</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/lap_stack_apple_0.jpg">
+                    <figcaption>Apple Lap Stack Level 0</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/gauss_stack_orange_0.jpg">
+                    <figcaption>Orange Gauss Stack Level 0</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/lap_stack_orange_0.jpg">
+                    <figcaption>Orange Lap Stack Level 0</figcaption>
+                </figure>
+            </div>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.3/gauss_stack_apple_1.jpg">
+                    <figcaption>Apple Gauss Stack Level 1</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/lap_stack_apple_1.jpg">
+                    <figcaption>Apple Lap Stack Level 1</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/gauss_stack_orange_1.jpg">
+                    <figcaption>Orange Gauss Stack Level 1</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/lap_stack_orange_1.jpg">
+                    <figcaption>Orange Lap Stack Level 1</figcaption>
+                </figure>
+            </div>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.3/gauss_stack_apple_2.jpg">
+                    <figcaption>Apple Gauss Stack Level 2</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/lap_stack_apple_2.jpg">
+                    <figcaption>Apple Lap Stack Level 2</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/gauss_stack_orange_2.jpg">
+                    <figcaption>Orange Gauss Stack Level 2</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/lap_stack_orange_2.jpg">
+                    <figcaption>Orange Lap Stack Level 2</figcaption>
+                </figure>
+            </div>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.3/gauss_stack_apple_3.jpg">
+                    <figcaption>Apple Gauss Stack Level 3</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/lap_stack_apple_3.jpg">
+                    <figcaption>Apple Lap Stack Level 3</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/gauss_stack_orange_3.jpg">
+                    <figcaption>Orange Gauss Stack Level 3</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/lap_stack_orange_3.jpg">
+                    <figcaption>Orange Lap Stack Level 3</figcaption>
+                </figure>
+            </div>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.3/gauss_stack_apple_4.jpg">
+                    <figcaption>Apple Gauss Stack Level 4</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/lap_stack_apple_4.jpg">
+                    <figcaption>Apple Lap Stack Level 4</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/gauss_stack_orange_4.jpg">
+                    <figcaption>Orange Gauss Stack Level 4</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.3/lap_stack_orange_4.jpg">
+                    <figcaption>Orange Lap Stack Level 4</figcaption>
+                </figure>
+            </div>
+
+            <h3>Part 2.4: Multiresolution Blending (a.k.a. the oraple!)</h3>
+
+            <p>
+                Shown below are blended pairs: an apple with an orange, Kirby with Snorlax, and a city at dusk with the same city at dawn. Each row displays the two original images, the mask used for blending, and the resulting blended image. For the apple–orange and city–dusk/dawn examples, I used gradient-style masks to achieve smooth transitions. For the Kirby–Snorlax example, I designed a custom mask to better match the shapes of the subjects.
+            </p>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.4/apple.jpeg">
+                    <figcaption>apple.jpeg</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.4/orange.jpeg">
+                    <figcaption>orange.jpeg</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.4/mask_img_apple_orange.jpg">
+                    <figcaption>Apple and Orange Mask</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.4/blended_img_apple_orange.jpg">
+                    <figcaption>Blended Apple and Orange</figcaption>
+                </figure>
+            </div>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.4/kirby.jpg">
+                    <figcaption>kirby.jpg</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.4/snorlax.jpg">
+                    <figcaption>snorlax.jpg</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.4/mask_img_kirby_snorlax.jpg">
+                    <figcaption>Kirby and Snorlax Mask</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.4/blended_img_kirby_snorlax.jpg">
+                    <figcaption>Blended Kirby and Snorlax</figcaption>
+                </figure>
+            </div>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/2.4/dusk.jpg">
+                    <figcaption>dusk.jpg</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.4/dawn.jpg">
+                    <figcaption>dawn.jpg</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.4/mask_img_dusk_dawn.jpg">
+                    <figcaption>Dusk and Dawn Mask</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/2.4/blended_img_dusk_dawn.jpg">
+                    <figcaption>Blended Dusk and Dawn</figcaption>
+                </figure>
+            </div>
+            
+        </div>
+
+        <div>
+            <h2>Conclusion</h2>
+
+            <p>
+                This project demonstrated how fundamental image processing techniques—such as convolution, finite difference operators, Gaussian smoothing, and frequency-based filtering—can be applied to produce powerful and visually compelling results. From sharpening and hybrid images to multi-resolution blending with Laplacian stacks, I explored how manipulating different frequency components enables both enhancement and seamless transitions in images. Overall, this work highlighted the close connection between mathematical concepts and their practical applications in computer vision.
+            </p>
+        </div>
+    </div> 
+</body>
+</html>

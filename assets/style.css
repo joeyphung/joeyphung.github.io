@@ -1,0 +1,58 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0px;
+}      
+
+.text {
+    margin: 40px;
+}
+
+a {
+    color: #1a73e8;      /* normal: bright blue */
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+a:hover {
+    color: #0c47b7;      /* hover: deeper blue */
+}
+
+nav {                              
+    width: 100%;                   
+    height: 70px;                   /* Height of the nav bar */
+    display: flex;                  /* Use flexbox layout*/
+    justify-content: flex-end;      /* Align items to the right side of the nav bar */
+    align-items: center;            /* Vertically center nav items*/
+    padding: 0 40px;                /* Left/right padding to the nav bar */
+    box-sizing: border-box;         /* Include padding in the total width calculaiton */
+    background-color: #f8f8f8;     
+    border-bottom: 1px solid #ddd; 
+    position: sticky;               /* Sticks to the top when scrolling */
+    top: 0;                         /* Position relative to the top */
+    z-index: 100;                   /* Ensure nav bar stays layered over other elements */
+} 
+
+nav a {
+    color: #272727;         /* Set link text color to different color */
+    padding: 5px 10px;      /* Add space around the link text (top/bottom = 5px, left/right = 10px) */
+    font-size: 1.2rem;      /* Make text larger */
+    text-decoration: none;  /* Remove the default underline from links */
+}
+
+nav a.active {        
+    font-weight: bold; /* Make the "active" link (the current page) bold */
+}               
+
+nav ul {              
+    list-style: none;  /* Remove bullet points from nav list */
+    display: flex;     /* Lay out nav items horizontally */
+    gap: 30px;         /* Put 30px space between nav items */
+    margin: 0;         /* Remove default margin around the list */
+    padding: 0;        /* Remove default padding */
+}    
+
+code {
+    font-family: "JetBrains Mono", "Consolas", monospace; /* Sets the font to one of these */
+    padding: 0.05em 0.1em; /* Adds internal padding to the code block */
+    border: 1px solid #ddd; /* Adds a border to the code block*/
+}
