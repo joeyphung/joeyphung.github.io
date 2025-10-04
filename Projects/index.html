@@ -5,73 +5,72 @@
     <title>Projects</title>
 
     <style>   
-        .projects_grid {
-            max-width: 90%;   /* How much each project row takes of the screen*/
-            margin: 1em auto; /* Top/ Bottom margin and centered */             
-            gap: 1em;         /* Gap between projects horizontally */           
-            display: flex;    /* So they are displayed horizontally*/
-        }
+        .projects_grid {                      
+            max-width: 90%;                    /* How much each project row takes of the screen*/
+            margin: 1em auto;                  /* Top/ Bottom margin and centered */
+            gap: 1em;                          /* Gap between projects horizontally */
+            display: flex;                     /* So they are displayed horizontally*/
+        }                                     
 
-        .project {
-            flex: 1 1;
-            padding: 2em;
-            margin: 0 auto;
-            text-align: center;
-            border: 3px solid #ddd;
+        .project {                            
+            flex: 1 1;                         /* Project boxes can grow and shrink*/
+            padding: 2em;                      /* Internal padding within box (from the edges) */
+            margin: 0 auto;                    /* 0 top/bottom margin and centered in the page */
+            text-align: center;               
+            border: 3px solid #ddd;           
             transition: transform 0.2s linear;
+        }                                     
+
+        .project:hover {                      
+            transform: translateY(-0.75em);    /* On hover, shifts the boxes up*/
+        }                                     
+
+        .project h2 {                         
+            margin: 0 0 0.5em 0;               /* Margin below the project title*/
+        }                                     
+
+        .project_img {                        
+            max-width: 200px;                 
+            max-height: 200px;                
+            margin: 0px 0px 0.5em 0px;         /* Margin below the project image*/
+        }                                     
+
+        .project_description {                
+            margin: 0 0 0.5em 0;               /* Margin below the project description*/
+        }                                     
+
+        .project_stack {                      
+            list-style-type: none;             /* Removes default bullet points */
+            padding: 0;                        /* remove default ul padding */
+            margin: 0 0 0.5em 0;               /* gap to links */
+            display: flex;                     /* Stack items are placed horizontally */
+            justify-content: center;          
+            font-weight: bold;                
+        }                                     
+
+        .project_stack-item {                 
+            font-size: 1rem;                  
+            margin: 0 0.5rem;                  /* vertical | horizontal */
+        }                                     
+
+        .project_link {                       
+            margin: 0em;                       /* Adds margins around the socials */
+        }                                     
+
+        .project_link a {                     
+            display: inline-block;             /* Makes links sit next to each other, also prevents weird artifacts */
+            margin: 0 10px;                    /* Horizontal spacing between links */
+            transition: transform 0.2s;        /* Smooth animation */
+        }                                     
+
+        .project_link a i {                   
+            font-size: 2.5rem;                 /* Large size for icons */
+            color: #272727;                  /* Default dark gray color */
+        }                                     
+
+        .project_link a i:hover {             
+            color: #0073b1;                  /* Color for when the icon is hovered over */
         }
-
-        .project:hover {
-            transform: translateY(-0.75em);
-        }
-
-        .project h2 {
-            margin: 0 0 0.5em 0;
-        }
-
-        .project_img {
-            max-width: 200px;
-            max-height: 200px;
-            margin: 0px 0px 0.5em 0px;
-        }      
-
-        .project_description {
-            margin: 0 0 0.5em 0;
-        }
-
-        .project_stack {               
-            list-style-type: none;      /* Removes default bullet points */
-            padding: 0;                 /* remove default ul padding */
-            margin: 0 0 0.5em 0;        /* gap to links */
-            display: flex;             
-            flex-wrap: wrap;           
-            justify-content: center;   
-            font-weight: bold;         
-        }                              
-
-        .project_stack-item {          
-            font-size: 1rem;           
-            margin: 0 0.5rem;           /* vertical | horizontal */
-        }                              
-
-        .project_link {                
-            margin: 0em;                /* Adds margins around the socials */
-        }                              
-
-        .project_link a {              
-            display: inline-block;      /* Makes links sit next to each other, also prevents weird artifacts */
-            margin: 0 10px;             /* Horizontal spacing between links */
-            transition: transform 0.2s; /* Smooth animation */
-        }                              
-
-        .project_link a i {            
-            font-size: 2.5rem;          /* Large size for icons */
-            color: #272727;             /* Default dark gray color */
-        }                              
-
-        .project_link a i:hover {      
-            color: #0073b1;             /* Color for when the icon is hovered over */
-        }                  
 
     </style>
     <link rel="stylesheet" href="/assets/style.css">
@@ -182,7 +181,7 @@
         <div class="projects_grid">
 
             <div class="project">
-                <h2>Fun with Filters and Frequencies! python</h2>
+                <h2>Fun with Filters and Frequencies!</h2>
                 <img src="/Projects/CS180Project2/images/2.4/blended_img_dusk_dawn.jpg" class="project_img">
                 <p class="project_description">
                     Implemented convolution, filtering, and frequency-based image processing techniques—including edge detection, Gaussian/DoG filters, sharpening, hybrid images, and multi-resolution blending—to explore fundamental concepts in computer vision.
@@ -219,7 +218,7 @@
             </div>
             
             <div class="project">
-                <h2>Map Reduce</h2>
+                <h2>MapReduce</h2>
                 <img src="/assets/mapreduce.png" class="project_img">
                 <p class="project_description">
                     Implemented a MapReduce framework, enabling parallel data processing with worker coordination, fault tolerance, and efficient task scheduling.
@@ -300,7 +299,7 @@
                 <h2>Modulock</h2>
                 <img src="/assets/modulock.png" class="project_img">
                 <p class="project_description">
-                    Collaborated with a team and Professor Scott Moura to design and build ModuLock, a U-Lock security augmentation with 3D-printed housing, ESP32 circuitry, and a C++ mobile app, winning the Judge’s Top Choice Award at Maker Design Expo 2023.
+                    Collaborated with a team and Professor Scott Moura to design and build ModuLock, a U-Lock security augmentation with 3D-printed housing, ESP32 circuitry, and a mobile app, winning the Judge’s Top Choice Award at Maker Design Expo 2023.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">C++</li>
@@ -322,13 +321,13 @@
             <div class="project">
                 <h2>Becoming Friends with Your Camera </h2>
                 <p class="project_description">
-                    Explored camera perspective, focal length, and projection through hands-on experiments, capturing portraits, architectural compression, and a dolly zoom effect to visualize how distance and zoom shape perception.
+                    Explored camera perspective, focal length, and projection through hands-on experiments, capturing portraits, demonstrating architectural compression, and creating a dolly zoom effect to visualize how distance and zoom shape perception.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">Java</li>
                 </ul>
                 <div class="project_link">
-                    <a href=/Projects/CS180Project0/index.html>
+                    <a href="/Projects/CS180Project0/index.html">
                         <i class="fas fa-external-link-alt"></i>
                     </a>
                 </div>
