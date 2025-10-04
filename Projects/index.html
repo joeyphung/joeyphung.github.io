@@ -6,14 +6,14 @@
 
     <style>   
         .projects_grid {
-            max-width: 90%; /* How much each project row takes of the screen*/
-            margin: 1em auto; /* Top/ Bottom margin and centered */
-            gap: 1em; /* Gap between projects horizontally */
-            display: flex; /* So they are displayed horizontally*/
+            max-width: 90%;   /* How much each project row takes of the screen*/
+            margin: 1em auto; /* Top/ Bottom margin and centered */             
+            gap: 1em;         /* Gap between projects horizontally */           
+            display: flex;    /* So they are displayed horizontally*/
         }
 
         .project {
-            flex: 1 1 calc(33.333% - 1em); /* take 1/3 of row minus gap */
+            flex: 1 1;
             padding: 2em;
             margin: 0 auto;
             text-align: center;
@@ -22,7 +22,7 @@
         }
 
         .project:hover {
-            transform: translateY(-7px);
+            transform: translateY(-0.75em);
         }
 
         .project h2 {
@@ -39,45 +39,45 @@
             margin: 0 0 0.5em 0;
         }
 
-        .project_stack {
+        .project_stack {               
             list-style-type: none;      /* Removes default bullet points */
             padding: 0;                 /* remove default ul padding */
-            margin: 0 0 0.5em 0; /* gap to links */
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            font-weight: bold; 
-        }
+            margin: 0 0 0.5em 0;        /* gap to links */
+            display: flex;             
+            flex-wrap: wrap;           
+            justify-content: center;   
+            font-weight: bold;         
+        }                              
 
-        .project_stack-item {
-            font-size: 1rem;
-            margin: 0 0.5rem; /* vertical | horizontal */
-        }
+        .project_stack-item {          
+            font-size: 1rem;           
+            margin: 0 0.5rem;           /* vertical | horizontal */
+        }                              
 
-        .project_link {                     
+        .project_link {                
             margin: 0em;                /* Adds margins around the socials */
         }                              
 
-        .project_link a {                   
+        .project_link a {              
             display: inline-block;      /* Makes links sit next to each other, also prevents weird artifacts */
             margin: 0 10px;             /* Horizontal spacing between links */
             transition: transform 0.2s; /* Smooth animation */
         }                              
 
-        .project_link a i {                 
-            font-size: 2.5rem;            /* Large size for icons */
+        .project_link a i {            
+            font-size: 2.5rem;          /* Large size for icons */
             color: #272727;             /* Default dark gray color */
-        }                               
+        }                              
 
-        .project_link a i:hover {           
+        .project_link a i:hover {      
             color: #0073b1;             /* Color for when the icon is hovered over */
         }                  
 
       
 
     </style>
-        <link rel="stylesheet" href="/assets/style.css">
-        <!-- For the icons at the bottom of the page -->
+    <link rel="stylesheet" href="/assets/style.css">
+    <!-- For the icons at the bottom of the page -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
@@ -86,7 +86,6 @@
         <ul>
             <li><a href="/index.html">Home</a></li>
             <li><a href="/Projects/index.html" class="active">Projects</a></li>
-            <li><a href="CS180/index.html">180</a></li>
             <li><a href="/assets/Resume Joey-Tai Phung.pdf" target="_blank">Resume</a></li>
         </ul>
     </nav>
@@ -107,6 +106,7 @@
 
             <div class="project">
                 <h2>A Secure File Sharing System</h2>
+                <img src="/assets/securefilesharingsystem.jpg" class="project_img">
                 <p class="project_description">
                     Developed a secure file sharing system, implementing user authentication, encryption, access control, and secure data storage to ensure confidentiality and integrity.
                 </p>
@@ -141,10 +141,29 @@
                     <li class="project_stack-item">ROS</li>
                 </ul>
                 <div class="project_link">
-                    <a href="https://github.com/BrianStormDev/chinese_checkers" target="_blank">
+                    <a href="https://github.com/BrianStormDev/chinese_checkers">
                         <i class="fab fa-github"></i>
                     </a>
-                    <a href="https://sites.google.com/berkeley.edu/fa24-eecs106a-group17/introduction?authuser=1" target="_blank">
+                    <a href="https://sites.google.com/berkeley.edu/fa24-eecs106a-group17/introduction?authuser=1">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="project">
+                <h2>Prokudin-Gorskii's Color Photography</h2>
+                <img src="/Projects/CS180Project1/images/out_church.jpg" class="project_img">
+                <p class="project_description">
+                    Developed an image processing pipeline to reconstruct Prokudin-Gorskii’s early 20th-century photographs by aligning RGB channels with a pyramid-based method and Sobel edge detection for sharp, full-color restorations.
+                </p>
+                <ul class="project_stack">
+                    <li class="project_stack-item">Python</li>
+                </ul>
+                <div class="project_link">
+                    <a href="https://github.com/joeyphung/Colorizing-Prokudin-Gorskii">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="/Projects/CS180Project1/index.html">
                         <i class="fas fa-external-link-alt"></i>
                     </a>
                 </div>
@@ -160,19 +179,46 @@
                 </ul>
             </div>
 
-            <div class="project">
-                <h2>Snek</h2>
-                <img src="/assets/snek.png" class="project_img">
-                <p class="project_description">
-                    Built a snake game, implementing game logic, dynamic memory management, and low-level data structures to handle real-time user interaction.
-                </p>
-                <ul class="project_stack">
-                    <li class="project_stack-item">C</li>
-                </ul>
-            </div>
         </div>
 
         <div class="projects_grid">
+
+            <div class="project">
+                <h2>Fun with Filters and Frequencies! python</h2>
+                <img src="/Projects/CS180Project2/images/2.4/blended_img_dusk_dawn.jpg" class="project_img">
+                <p class="project_description">
+                    Implemented convolution, filtering, and frequency-based image processing techniques—including edge detection, Gaussian/DoG filters, sharpening, hybrid images, and multi-resolution blending—to explore fundamental concepts in computer vision.
+                </p>
+                <ul class="project_stack">
+                    <li class="project_stack-item">Python</li>
+                </ul>
+                <div class="project_link">
+                    <a href="https://github.com/joeyphung/Fun-with-Filters-and-Frequencies">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="/Projects/CS180Project2/index.html">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="project">
+                <h2>(Auto)stitching and Photo Mosaics </h2>
+                <p class="project_description">
+                    TODO
+                </p>
+                <ul class="project_stack">
+                    <li class="project_stack-item">Python</li>
+                </ul>
+                <div class="project_link">
+                    <a href="https://github.com/joeyphung/Autostitching-and-Photo-Mosaics">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="/Projects/CS180Project3/index.html">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+            </div>
             
             <div class="project">
                 <h2>Map Reduce</h2>
@@ -185,6 +231,10 @@
                 </ul>
             </div>
 
+        </div>
+
+        <div class="projects_grid">
+
             <div class="project">
                 <h2>CS61CPU</h2>
                 <img src="/assets/cs61cpu.png" class="project_img">
@@ -195,7 +245,7 @@
                     <li class="project_stack-item">Logisim</li>
                 </ul>
             </div>
-
+            
             <div class="project">
                 <h2>2048</h2>
                 <img src="/assets/2048.png" class="project_img">
@@ -206,9 +256,22 @@
                     <li class="project_stack-item">Java</li>
                 </ul>
             </div>
+
+            <div class="project">
+                <h2>Snek</h2>
+                <img src="/assets/snek.png" class="project_img">
+                <p class="project_description">
+                    Built a snake game, implementing game logic, dynamic memory management, and low-level data structures to handle real-time user interaction.
+                </p>
+                <ul class="project_stack">
+                    <li class="project_stack-item">C</li>
+                </ul>
+            </div>
+
         </div>
 
         <div class="projects_grid">
+
             <div class="project">
                 <h2>Scheme Interpreter</h2>
                 <img src="/assets/scheme.png" class="project_img">
@@ -229,7 +292,7 @@
                     <li class="project_stack-item">C++</li>
                 </ul>
                 <div class="project_link">
-                    <a href="https://github.com/joeyphung/Micromouse-Fall-2023" target="_blank">
+                    <a href="https://github.com/joeyphung/Micromouse-Fall-2023">
                         <i class="fab fa-github"></i>
                     </a>
                 </div>
@@ -245,10 +308,29 @@
                     <li class="project_stack-item">C++</li>
                 </ul>
                 <div class="project_link">
-                    <a href="https://github.com/joeyphung/T-Prep2023" target="_blank">
+                    <a href="https://github.com/joeyphung/T-Prep2023">
                         <i class="fab fa-github"></i>
                     </a>
-                    <a href="https://sites.google.com/berkeley.edu/prep2023/special-events/design-expo?authuser=0" target="_blank">
+                    <a href="https://sites.google.com/berkeley.edu/prep2023/special-events/design-expo">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="projects_grid">
+
+            <div class="project">
+                <h2>Becoming Friends with Your Camera </h2>
+                <p class="project_description">
+                    Explored camera perspective, focal length, and projection through hands-on experiments, capturing portraits, architectural compression, and a dolly zoom effect to visualize how distance and zoom shape perception.
+                </p>
+                <ul class="project_stack">
+                    <li class="project_stack-item">Java</li>
+                </ul>
+                <div class="project_link">
+                    <a href=/Projects/CS180Project0/index.html>
                         <i class="fas fa-external-link-alt"></i>
                     </a>
                 </div>
@@ -264,14 +346,15 @@
                     <li class="project_stack-item">Java</li>
                 </ul>
                 <div class="project_link">
-                    <a href="YOUR_GITHUB_PROFILE_URL" target="_blank">
+                    <a href="YOUR_GITHUB_PROFILE_URL">
                         <i class="fab fa-github"></i>
                     </a>
-                    <a href="YOUR_EXTERNAL_SITE_URL" target="_blank">
+                    <a href="YOUR_EXTERNAL_SITE_URL">
                         <i class="fas fa-external-link-alt"></i>
                     </a>
                 </div>
             </div> -->
+
         </div>
     </div>
 </body>
