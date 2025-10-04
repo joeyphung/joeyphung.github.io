@@ -5,6 +5,11 @@
     <title>Projects</title>
 
     <style>   
+        html {
+            -webkit-text-size-adjust: 100%; /* Prevent iOS Safari from resizing text */
+            text-size-adjust: 100%;         /* Standard property for others */
+        }
+
         .projects_grid {                      
             max-width: 90%;                    /* How much each project row takes of the screen*/
             margin: 1em auto;                  /* Top/ Bottom margin and centered */
@@ -28,7 +33,7 @@
             transform: translateY(-0.75em);    /* On hover, shifts the boxes up*/
         }                                     
 
-        .project h2 {                         
+        .project h1 {                         
             margin: 0 0 0.5em 0;               /* Margin below the project title*/
         }                                     
 
@@ -40,6 +45,7 @@
 
         .project_description {                
             margin: 0 0 0.5em 0;               /* Margin below the project description*/
+            font-size: 1.05em;
         }                                     
 
         .project_stack {                      
@@ -52,7 +58,7 @@
         }                                     
 
         .project_stack-item {                 
-            font-size: 1rem;                  
+            font-size: 1.2rem;                  
             margin: 0 0.5rem;                  /* vertical | horizontal */
         }                                     
 
@@ -94,10 +100,10 @@
         <div class="projects_grid">
 
             <div class="project">
-                <h2>PintOS</h2>
+                <h1>PintOS</h1>
                 <img src="/assets/cs162bean.png" class="project_img">
                 <p class="project_description">
-                    Built an instructional operating system, implementing multithreading and synchronization, user program execution with system calls, and a full-featured file system.
+                    An instructional operating system implementing multithreading and synchronization, user program execution with system calls, and a full-featured file system supporting concurrency and persistent storage.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">C</li>
@@ -105,10 +111,10 @@
             </div>
 
             <div class="project">
-                <h2>A Secure File Sharing System</h2>
+                <h1>A Secure File Sharing System</h1>
                 <img src="/assets/securefilesharingsystem.jpg" class="project_img">
                 <p class="project_description">
-                    Developed a secure file sharing system, implementing user authentication, encryption, access control, and secure data storage to ensure confidentiality and integrity.
+                    A secure file-sharing platform integrating user authentication, encryption, access control, and encrypted storage to ensure data confidentiality and integrity across users.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">Go</li>
@@ -116,10 +122,10 @@
             </div>
 
             <div class="project">
-                <h2>Build Your Own World</h2>
+                <h1>Build Your Own World</h1>
                 <img src="/assets/buildyourownworld.png" class="project_img">
                 <p class="project_description">
-                    Designed and implemented a 2D tile-based game world, featuring procedural generation with Delaunay triangulation, interactive gameplay mechanics, and object-oriented architecture.
+                    A procedurally generated 2D tile-based game world featuring Delaunay triangulation, interactive gameplay mechanics, and a modular, object-oriented architecture.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">Java</li>
@@ -131,10 +137,10 @@
         <div class="projects_grid">
             
             <div class="project">
-                <h2>Chinese Checkers Pro</h2>
+                <h1>Chinese Checkers Pro</h1>
                 <img src="/assets/chinesecheckerspro.jpg" class="project_img">
                 <p class="project_description">
-                    Developed a Python-based Chinese Checkers system where a Sawyer robot uses computer vision and AI (including Minimax and Alpha-Beta pruning) to autonomously play against a human, accurately detecting, picking up, and placing pieces on the board.
+                    A Python and ROS-based Chinese Checkers system where a Sawyer robot autonomously detects, picks up, and places pieces using computer vision and AI with Minimax and Alpha-Beta pruning for real-time decision making.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">Python</li>
@@ -151,10 +157,10 @@
             </div>
 
             <div class="project">
-                <h2>Prokudin-Gorskii's Color Photography</h2>
+                <h1>Prokudin-Gorskii's Color Photography</h1>
                 <img src="/Projects/CS180Project1/images/out_church.jpg" class="project_img">
                 <p class="project_description">
-                    Developed an image processing pipeline to reconstruct Prokudin-Gorskii’s early 20th-century photographs by aligning RGB channels with a pyramid-based method and Sobel edge detection for sharp, full-color restorations.
+                    An image processing pipeline reconstructing Prokudin-Gorskii’s early 20th-century photographs by aligning RGB channels with a pyramid-based method and Sobel edge detection for sharp, full-color restorations.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">Python</li>
@@ -170,9 +176,9 @@
             </div>
 
             <div class="project">
-                <h2>Shell</h2>
+                <h1>Shell</h1>
                 <p class="project_description">
-                    Implemented a Unix-like shell, supporting process creation, command execution, I/O redirection, and job control with proper synchronization.
+                    A Unix-like shell supporting process creation, command execution, I/O redirection, and job control through precise synchronization and signal handling.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">C</li>
@@ -184,10 +190,10 @@
         <div class="projects_grid">
 
             <div class="project">
-                <h2>Fun with Filters and Frequencies!</h2>
+                <h1>Fun with Filters and Frequencies!</h1>
                 <img src="/Projects/CS180Project2/images/2.4/blended_img_dusk_dawn.jpg" class="project_img">
                 <p class="project_description">
-                    Implemented convolution, filtering, and frequency-based image processing techniques—including edge detection, Gaussian/DoG filters, sharpening, hybrid images, and multi-resolution blending—to explore fundamental concepts in computer vision.
+                    A computer vision project implementing convolution, filtering, and frequency-based techniques—including edge detection, Gaussian/DoG filters, sharpening, hybrid images, and multi-resolution blending—to explore fundamental image processing concepts.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">Python</li>
@@ -203,7 +209,7 @@
             </div>
 
             <div class="project">
-                <h2>(Auto)stitching and Photo Mosaics </h2>
+                <h1>(Auto)stitching and Photo Mosaics </h1>
                 <p class="project_description">
                     TODO
                 </p>
@@ -221,10 +227,10 @@
             </div>
             
             <div class="project">
-                <h2>MapReduce</h2>
+                <h1>MapReduce</h1>
                 <img src="/assets/mapreduce.png" class="project_img">
                 <p class="project_description">
-                    Implemented a MapReduce framework, enabling parallel data processing with worker coordination, fault tolerance, and efficient task scheduling.
+                   A MapReduce framework enabling distributed data processing with worker coordination, fault tolerance, and efficient task scheduling for large-scale computation.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">C</li>
@@ -236,10 +242,10 @@
         <div class="projects_grid">
 
             <div class="project">
-                <h2>CS61CPU</h2>
+                <h1>CS61CPU</h1>
                 <img src="/assets/cs61cpu.png" class="project_img">
                 <p class="project_description">
-                    Designed and implemented a simple CPU to handle RISC-V instructions, building the instruction set architecture, control logic, datapath, and support for arithmetic, memory, and branching operations.
+                    A custom-designed CPU executing RISC-V instructions with an implemented datapath, control logic, instruction set architecture, and support for arithmetic, memory, and branching operations.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">Logisim</li>
@@ -247,10 +253,10 @@
             </div>
             
             <div class="project">
-                <h2>2048</h2>
+                <h1>2048</h1>
                 <img src="/assets/2048.png" class="project_img">
                 <p class="project_description">
-                    Developed a fully functional 2048 game, implementing game mechanics, tile merging logic, and a responsive user interface with object-oriented design principles.
+                    A fully functional 2048 game implementing tile merging logic, state management, and a responsive user interface built with object-oriented design principles.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">Java</li>
@@ -258,10 +264,10 @@
             </div>
 
             <div class="project">
-                <h2>Snek</h2>
+                <h1>Snek</h1>
                 <img src="/assets/snek.png" class="project_img">
                 <p class="project_description">
-                    Built a snake game, implementing game logic, dynamic memory management, and low-level data structures to handle real-time user interaction.
+                    A C-based snake game handling real-time user interaction through dynamic memory management, low-level data structures, and efficient game loop control.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">C</li>
@@ -273,10 +279,10 @@
         <div class="projects_grid">
 
             <div class="project">
-                <h2>Scheme Interpreter</h2>
+                <h1>Scheme Interpreter</h1>
                 <img src="/assets/scheme.png" class="project_img">
                 <p class="project_description">
-                    I built a Scheme interpreter, implementing symbol lookup, special forms (like define, lambda, quote, begin), user-defined procedures, and both lexical and dynamic scoping (via the lambda and mu forms).
+                    A Python-based interpreter for Scheme implementing symbol lookup, special forms (define, lambda, quote, begin), user-defined procedures, and both lexical and dynamic scoping via lambda and mu expressions.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">Python</li>
@@ -284,9 +290,9 @@
             </div>
 
             <div class="project">
-                <h2>Micromouse</h2>
+                <h1>Micromouse</h1>
                 <p class="project_description">
-                    Designed and built an autonomous maze-solving robot from the ground up, assembling hardware components, integrating encoders and IR sensors, and implementing motor control with odometry and PID for precise movement.
+                    An autonomous maze-solving robot built from the ground up with custom hardware assembly, encoder and IR sensor integration, and precise motor control using odometry and PID algorithms.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">C++</li>
@@ -299,10 +305,10 @@
             </div>
 
             <div class="project">
-                <h2>Modulock</h2>
+                <h1>Modulock</h1>
                 <img src="/assets/modulock.png" class="project_img">
                 <p class="project_description">
-                    Collaborated with a team and Professor Scott Moura to design and build ModuLock, a U-Lock security augmentation with 3D-printed housing, ESP32 circuitry, and a mobile app, winning the Judge’s Top Choice Award at Maker Design Expo 2023.
+                    A collaborative hardware project with Professor Scott Moura designing ModuLock, a U-Lock security augmentation featuring 3D-printed housing, ESP32-based circuitry, and a mobile app, earning the Judge’s Top Choice Award at Maker Design Expo 2023.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">C++</li>
@@ -322,9 +328,9 @@
         <div class="projects_grid">
 
             <div class="project">
-                <h2>Becoming Friends with Your Camera </h2>
+                <h1>Becoming Friends with Your Camera </h1>
                 <p class="project_description">
-                    Explored camera perspective, focal length, and projection through hands-on experiments, capturing portraits, demonstrating architectural compression, and creating a dolly zoom effect to visualize how distance and zoom shape perception.
+                    A photography project exploring camera perspective, focal length, and projection through portrait capture, architectural compression, and dolly zoom experiments illustrating how distance and zoom affect spatial perception.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">Java</li>
@@ -337,7 +343,7 @@
             </div>
 
             <!-- <div class="project">
-                <h2>2048</h2>
+                <h1>2048</h1>
                 <img src="/assets/2048.png" class="project_img">
                 <p class="project_description">
                     Developed a fully functional 2048 game in Java, implementing game mechanics, tile merging logic, and a responsive user interface with object-oriented design principles.
