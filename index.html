@@ -2,24 +2,30 @@
 <html>
 <head>
     <title>Joey-Tai Phung</title>
-    <meta name="description" content="Portfolio website for Joey-Tai Phung, showcasing projects, resume, and coursework">
-    <meta name="keywords" content="Joey-Tai Phung, portfolio, embedded systems, robotics, AI, UC Berkeley, computer vision, operating systems, computer security, systems programming, computer networking">
     <meta name="author" content="Joey-Tai Phung">
+    <meta name="description" content="Personal portfolio of Joey-Tai Phung, featuring projects, coursework, and resume.">
+    <meta name="keywords" content="Joey-Tai Phung, portfolio, embedded systems, robotics, AI, UC Berkeley, computer vision, operating systems, computer security, systems programming, computer networking">
+
+    <!-- For site verification -->
     <meta name="google-site-verification" content="lkuGAkpO5xtKxoiRZQgsTIGwpoLiK9NeQCyjMTXHkEQ" />
+
+    <!-- Helps browser scale relative to device width -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
         body {
             text-align: center;            /* Center all text */
         }     
 
+        /* 1550 width, 800 height current */
         .profile-pic {                     
             width: 300px;                  
-            height: 300px;                 
+            height: auto;                 
             margin-top: 40px;               /* Margin above the image */
         }     
         
         .bio {
-            max-width: 500px; /* Set a max width for the bio */
+            max-width: 50vw; /* Set a max width for the bio */
             margin: 0 auto;   /* Center the paragraph block horizontally */
             line-height: 1.5; /* Increases line spacing */
         }       
@@ -148,24 +154,39 @@
             margin: 20px;               /* Adds margins around the socials */
         }                              
 
-        .socials a {                   
-            display: inline-block;      /* Makes links sit next to each other, also prevents weird artifacts */
-            margin: 0 10px;             /* Horizontal spacing between links */
-            transition: transform 0.2s; /* Smooth animation */
-        }                              
+        .socials a {                        
+            display: inline-block;           /* Makes links sit next to each other, also prevents weird artifacts */
+            margin: 0 10px;                  /* Horizontal spacing between links */
+            transition: transform 0.2s;      /* Smooth animation */
+        }                                   
 
-        .socials a i {                 
-            font-size: 4rem;            /* Large size for icons */
-            color: #272727;             /* Default dark gray color */
-        }                              
+        .socials a i {                      
+            font-size: 4rem;                 /* Large size for icons */
+            color: #272727;                  /* Default dark gray color */
+        }                                   
 
-        .socials a i:hover {           
-            color: #0073b1;             /* Color for when the icon is hovered over */
-        }                              
+        .socials a i:hover {                
+            color: #0073b1;                  /* Color for when the icon is hovered over */
+        }                                   
 
-        .socials a:hover {             
-            transform: scale(1.1);      /* Icons grow larger on hover */
-        }     
+        .socials a:hover {                  
+            transform: scale(1.1);           /* Icons grow larger on hover */
+        }                                   
+
+        /* This triggers if the window is too small */
+        @media (max-width: 1100px) {        
+            .timeline-container {           
+                width: 80vw;                 /* never exceed 80% of viewport width */
+                overflow-x: hidden;          /* no horizontal scrolling */
+                overflow-y: hidden;          /* no vertical scroll */
+            }                               
+
+            .timeline {                     
+                overflow-x: auto;            /* allow horizontal scroll */
+                justify-content: flex-start; /* Start the scroll on the left side */
+                padding-bottom: 10px;        /* some space for scrollbar */
+            }                               
+        }
     </style>
     
     <link rel="stylesheet" href="/assets/style.css">

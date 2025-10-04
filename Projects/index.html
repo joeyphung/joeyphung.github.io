@@ -10,9 +10,12 @@
             margin: 1em auto;                  /* Top/ Bottom margin and centered */
             gap: 1em;                          /* Gap between projects horizontally */
             display: flex;                     /* So they are displayed horizontally*/
+            justify-content: center;       /* center items in the row */
+            flex-wrap: wrap;               /* allow wrapping */
         }                                     
 
         .project {                            
+            min-width: 250px;
             flex: 1 1;                         /* Project boxes can grow and shrink*/
             padding: 2em;                      /* Internal padding within box (from the edges) */
             margin: 0 auto;                    /* 0 top/bottom margin and centered in the page */
@@ -141,7 +144,7 @@
                     <a href="https://github.com/BrianStormDev/chinese_checkers">
                         <i class="fab fa-github"></i>
                     </a>
-                    <a href="https://sites.google.com/berkeley.edu/fa24-eecs106a-group17/introduction?authuser=1">
+                    <a href="https://sites.google.com/berkeley.edu/fa24-eecs106a-group17/introduction">
                         <i class="fas fa-external-link-alt"></i>
                     </a>
                 </div>
