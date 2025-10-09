@@ -4,7 +4,16 @@ body {
 }      
 
 .text {
-    margin: 40px;
+    margin: 60px;
+}
+
+/* Indents any paragraph and bullet points slightly */
+p {
+    margin: 0 2em 0 2em;
+}
+
+ul {
+    margin: 0 2em 0 2em;
 }
 
 a {

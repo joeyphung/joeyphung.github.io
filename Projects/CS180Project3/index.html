@@ -4,7 +4,35 @@
     <title>CS 180 Project 3</title>
 
     <style>
+        img {
+            max-width: 100%;   /* don’t overflow container*/
+            width: 100%;       /* So images fill their containers */
+            height: auto;      /* keeps aspect ratio */
+        }
+        
+        /* Used for images in a row, class of div */
+        .image-row {
+            display: flex;                  
+            flex-wrap: nowrap;             /* keep them on the same row */
+            gap: 25px;                     /* Gap between figures */
+            justify-content: center;       /* center the row */
+            margin: 25px 100px 25px 100px; /* spacing between container and everything else */
+        }
 
+        .img-bordered {
+            border: 5px solid black;   /* thickness + color */
+            border-radius: 8px;        /* rounded corners */
+            padding: 0px;              /* space between img and border */
+        }
+
+        /* For images with captions, used inside an image-row */
+        figure {
+            flex: 1 1 400px;         /* The 1 1 values allows the image to grow or shrink, images start at 400px */
+            max-width: 400px;        /* Caps the containers width */
+            margin: 0px;             /* Gets rid of the margin around the images so that gap in image-row can set it  */
+            text-align: center;      /* centers captions below each image */
+            min-width: 0;             /* Allows images to stay the same size when they shrink */
+        }
     </style>
     <link rel="stylesheet" href="/assets/style.css">
 
@@ -26,30 +54,333 @@
     <h1>CS 180 Project 3: (Auto)stitching and Photo Mosaics </h1>
 
     <div>
-        <h3>Introduction</h3>
+        <h2>Introduction (TODO)</h2>
             <p>
-                bla bla
+                
             </p>
     </div>
 
     <div>
-        <h2>Part 1: Fun with Filters</h2>
+        <h2>Part 1: Image Warping and Mosaicing</h2>
 
-        <h3>Part 1.1: Convolutions from Scratch!</h3>
+        <h3>Part 1.1: Shoot the Pictures</h3>
 
         <p>
-        In this section, I implement four-loop and two-loop convolutions by hand. Both the four-loop and two-loop convolution implementations work by sliding a flipped kernel over the padded image and computing a dot product at each position. The difference lies in how this dot product is calculated:
+        I captured pairs of photographs with projective transformations by keeping the camera’s center of projection fixed and rotating it between shots. The three pairs below demonstrate this setup.
         </p>
 
         <div class="image-row">
             <figure>
-                <img src="./images/1.1/four_loop.png" class="img-large">
-                <figcaption>Four Loop Code</figcaption>
+                <img src="./images/1.1/img1.jpg">
+                <figcaption>Left Image of Intersection</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/1.1/img2.jpg">
+                <figcaption>Right Image of Intersection</figcaption>
             </figure>
         </div>
 
-        <h3>Part 1.2: Finite Difference Operator</h3>
+        <div class="image-row">
+            <figure>
+                <img src="./images/1.1/img3.jpg">
+                <figcaption>Left Image of Campus</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/1.1/img4.jpg">
+                <figcaption>Right Image of Campus</figcaption>
+            </figure>
+        </div>
 
+        <div class="image-row">
+            <figure>
+                <img src="./images/1.1/img5.jpg">
+                <figcaption>Left Image of Park</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/1.1/img6.jpg">
+                <figcaption>Right Image of Park</figcaption>
+            </figure>
+        </div>
+
+        <h3>Part 1.2: Recover Homographies </h3>
+        <h4>Mathematical Background</h4>
+            <p>
+                Before I can align the images, I first need to recover the parameters of the transformation between each pair. This transformation is a homography, defined as \(p' = Hp\) where H is a \( (3 \times 3) \) matrix with 8 degrees of freedom. A homography can be estimated from a set of corresponding points \((p', p)\) across two images. At least four pairs of correspondences are required to solve for \( H \), though more points are typically used to reduce noise from hand selection or slight camera movement. A point \( [x, y, 1]^{\top} \) in image 1 is related to point \( [u, v, 1]^{\top} \) in image 2 by:
+                \[
+                    \lambda \begin{bmatrix} u \\ v \\ 1 \end{bmatrix} = H \begin{bmatrix} x \\ y \\ 1 \end{bmatrix}
+                \]
+                where \( \lambda \) is a scalar factor. The homography matrix can be expressed as:
+                \[
+                    H = \begin{bmatrix}
+                        h_{1} & h_{2} & h_{3} \\
+                        h_{4} & h_{5} & h_{6} \\
+                        h_{7} & h_{8} & 1
+                    \end{bmatrix}
+                \]
+                To estimate \( H \), I rewrite the correspondences as an ordinary least squares (OLS) problem (\( Ah=b \)), where \( h = [h_{1}, h_{2}, h_{3}, h_{4}, h_{5}, h_{6}, h_{7}, h_{8}]^{\top} \), is the vectorized form of the matrix. Expanding the earlier equation gives:
+                \[  
+                    \begin{bmatrix} 
+                        \lambda u \\ 
+                        \lambda v \\ 
+                        \lambda  
+                    \end{bmatrix}
+                    = 
+                    \begin{bmatrix}
+                        h_{1} & h_{2} & h_{3} \\
+                        h_{4} & h_{5} & h_{6} \\
+                        h_{7} & h_{8} & 1
+                    \end{bmatrix}
+                    \begin{bmatrix} 
+                        x \\ 
+                        y \\ 
+                        1
+                    \end{bmatrix}
+                \]
+                Expanding this out and eliminating \( \lambda \) yields two equations: 
+                \[  
+                    h_{1}x + h_{2}y + h_{3} + h_{7}(-ux) + h_{8}(-uy) = u 
+                \]
+                \[  
+                    h_{4}x + h_{5}y + h_{6} + h_{7}(-vx) + h_{8}(-vy) = v
+                \]
+                Stacking these equations for all point correspondences produces the linear system:
+                \[  
+                    \begin{bmatrix}
+                        x_{1} & y_{1} & 1 & 0 & 0 & 0 & -u_{1}x_{1} & -u_{1}y_{1} \\
+                        0 & 0 & 0 & x_{1} & y_{1} & 1 & -v_{1}x_{1} & -v_{1}y_{1} \\
+                        x_{2} & y_{2} & 1 & 0 & 0 & 0 & -u_{2}x_{2} & -u_{2}y_{2} \\
+                        0 & 0 & 0 & x_{2} & y_{2} & 1 & -v_{2}x_{2} & -v_{2}y_{2} \\
+                        & & & & \vdots
+                    \end{bmatrix}
+                    \begin{bmatrix}
+                        h_{1} \\ h_{2} \\ h_{3} \\
+                        h_{4} \\ h_{5} \\ h_{6} \\
+                        h_{7} \\ h_{8}
+                    \end{bmatrix}
+                    =
+                    \begin{bmatrix}
+                        u_{1} \\ v_{1} \\ 
+                        u_{2} \\ v_{2} \\ 
+                        \vdots
+                    \end{bmatrix}
+                \]
+
+            Solving this least squares system yields \(h\), from which the homography matrix \( H \) is reconstructed.
+            </p>
+
+        <h4>Implementation</h4>
+            <p>
+                I selected correspondence points using matplotlib’s <code>ginput()</code> and saved them to a text file to avoid reselecting them each time. The function that gathers these points returns a list of all (x,y) correspondences for each image. I implemented <code>H = computeH(im1_pts, im2_pts)</code>, described below. To compute the homography, I initialized matrix \( A \) and vector \( b \) as empty arrays. For each pair of points in the correspondence list, I converted them into the OLS form shown earlier and appended the results as rows to  \( A \) and \( b \). After processing all points, I used NumPy’s <code>linalg.lstsq()</code> to solve for vector \( h \), which was then reshaped to reconstruct \( H \).
+                
+                <br><br>
+                The images below show the manually selected correspondence points for two image pairs and the resulting homographies computed from them.
+            </p>
+
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/1.2/correspondence_img1.png">
+                <figcaption>Correspondence Points on Left Image of Intersection</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/1.2/correspondence_img2.png">
+                <figcaption>Correspondence Points on Right Image of Intersection</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/1.2/homo_12.png">
+                <figcaption>Recovered Homography of Intersection</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/1.2/correspondence_img3.png">
+                <figcaption>Correspondence Points on Left Image of Campus</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/1.2/correspondence_img4.png">
+                <figcaption>Correspondence Points on Right Image of Campus</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/1.2/homo_34.png">
+                <figcaption>Recovered Homography of Campus</figcaption>
+            </figure>
+        </div>
+
+
+        <h3>Part 1.3: Warp the Images </h3>
+        <h4>Warping</h4>
+        <p>
+            In this section, I implement image warping using inverse warping, where I iterate over pixels in the output image rather than the input. I define the origin (0,0) at the top-left corner of the first pixel and treat pixels as rays. This convention simplifies the process by avoiding corner cases and the need for extrapolation when mapping pixels.
+
+            <br><br>
+            The first step is to determine the bounding box, which defines the output dimensions. Even if the warped image does not occupy the entire space, the bounding box ensures that all transformed points fit within the output frame. I compute it by applying the forward transformation to the four corners of the source image, then finding the minimum and maximum x and y coordinates among these transformed points. The output width and height are the differences between these extrema. Because the transformation can produce negative coordinates, and negative indices would cause wrapping, I apply a translation to shift the image so that all coordinates are positive. This shift becomes important later when blending images.
+            
+            <br><br>
+            The warping process begins the same way for both interpolation methods. After computing the bounding box and image shift, I initialize the warped image with an alpha channel set to zero and append an alpha channel of ones to the input image. This setup ensures that only pixels with valid mappings are visible in the output, while unmapped areas remain black. Next, I invert the homography matrix \( H \) since output pixels are determined by their corresponding positions in the source image through \( H^{-1} \).
+            
+            <br><br>
+            I then iterate over each pixel in the output image. Each pixel’s coordinates are first shifted using the values from <code>get_bounding_box()</code> to keep all pixels in frame. The coordinates are converted to homogeneous form, multiplied by \( H^{-1} \), and then converted back to Cartesian coordinates to locate the corresponding position in the original image. Because this position may not align with integer pixel coordinates, interpolation is required. Let this mapped position be called the "sample pixel". The two interpolation methods implemented are explained below:
+            <br><br>
+            </p>
+
+            <ul>
+                <li>
+                    <b>Nearest neighbor interpolation:</b> 
+                    The sample pixel's coordinates are rounded to the nearest integer, and the corresponding value is taken directly. 
+                </li> 
+                
+                <br>
+                
+                <li>
+                    <b>Bilinear interpolation:</b>
+                    The original pixel’s coordinates are floored to find the lower-left corner of the surrounding pixel box, denoted \(I_{11}\). The other corners \(I_{12}\), \(I_{21}\), and \(I_{22}\) are found by adding one to the respective x and y indices. Let the sample pixel be at \((x, y)\), and the pixels \(I_{ij}\) be at \((x_i, y_j)\). Two horizontal interpolations are computed as \(f(x, y_j) = (x_2 - x)I_{1j} + (x - x_1)I_{2j}\) for \(j = 1, 2\). A final vertical interpolation between these results gives the pixel’s intensity: \( f(x, y) = (y_2 - y)f(x, y_1) + (y - y_1)f(x, y_2) \). This produces a smooth approximation of the pixel value based on its neighbors.
+                </li> 
+            </ul>
+
+            <br><br>
+            <p>
+                The results below show the warped versions of the “Left Image of Intersection” using nearest neighbor and bilinear interpolation. The difference is subtle, but the bilinear result appears smoother and less jagged. This is expected since bilinear interpolation computes each pixel as a weighted average of its neighbors, while nearest neighbor simply selects the closest pixel value. I also observed that the bilinear method runs slightly slower than nearest neighbor due to the additional computations involved.
+            </p>
+
+            <div class="image-row">
+            <figure>
+                <img src="./images/1.3/img1_nn_image.png">
+                <figcaption>Nearest Neighbor Interpolation</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/1.3/img1_bil_image.png">
+                <figcaption>Bilinear Interpolation</figcaption>
+            </figure>
+        </div>
+
+        <h4>Rectification</h4>
+        <p>
+            Rectification involves taking an image of a known rectangular object captured from an angle and transforming it so the object appears rectangular rather than distorted. This is done by selecting four correspondence points on the image that match the four corners of the rectangle, then computing a homography using four reference points defined as \( [(0,0),(0,1),(1,1),(1,0)] \), starting from the top-left corner and moving clockwise. Because mapping directly to this unit square would result in a very small image, the points must be scaled. The scaling factor is estimated by measuring the actual size of the rectangle in the image, which is done by taking the maximum and minimum x and y coordinates among the four selected corners and subtracting the minimum values from the maximum values. This gives the approximate width and height of the rectangular region and produces the scaled reference points \( [(0,0),(0,h),(w,h),(w,0)] \). 
+
+            <br><br>
+            Once the homography between these scaled points and the image correspondences is computed, warping can be performed. Since the goal is to align the image corners with the corners of the output frame, no displacement is applied when generating the output pixels. As a result, some regions outside the rectangular object are not mapped to the final image. After warping, the image is cropped automatically to the estimated width and height.
+            
+            <br><br>
+            Shown below are examples of the resulting rectified images.
+        </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/1.3/img11.jpg">
+                <figcaption>Painting</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/1.3/img11_rectified.png">
+                <figcaption>Rectified Painting</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/1.3/img12.jpg">
+                <figcaption>Bulbasaur</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/1.3/img12_rectified.png">
+                <figcaption>Rectified Bulbasaur</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/1.3/img13.jpg">
+                <figcaption>Slowpoke</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/1.3/img13_rectified.png">
+                <figcaption>Rectified Slowpoke</figcaption>
+            </figure>
+        </div>
+        
+        <h3>Part 1.4: Blend the Images into a Mosaic </h3>
+
+        <p> 
+            In this section, I describe how I create a mosaic from two images related by a projective transform. For clarity, image1 refers to the image being warped, and image2 is the reference image. Using the functions defined earlier, I first compute a homography and warp image1 into the coordinate space of image2. Because this transformation can produce negative coordinates, the resulting image must be shifted to keep all pixels within valid bounds. If both images were combined without applying this shift to image2, they would not align properly. Thus, the same shift is applied to image2 to ensure alignment.
+            <br><br>
+            
+            After alignment, both images are padded with zeros using <code>np.pad()</code> so they share the same dimensions and can be added together. Padding is applied only to the top and right edges to maintain their positions in coordinate space while simply extending the canvas size.
+            <br><br>
+
+            Once both images have matching dimensions, they can be blended to form a smooth mosaic. I use multiresolution blending with a specially constructed mask. The mask is generated by taking the alpha channels of each image, applying SciPy’s <code>ndimage.distance_transform_edt()</code> to them, and comparing the results to form a binary mask (<code>mask = logical(mask1 > mask2)</code>). This mask defines which regions of each image contribute to the final blend and, together with the multiresolution blending, helps eliminate edge artifacts that would otherwise appear at the seams.
+            <br><br>
+
+            After the Laplacian pyramid layers are recombined, I clip all pixel values to the range [0, 1]. Clipping is used instead of min-max normalization since all intermediate operations are already normalized. Any small deviations are better corrected by trimming rather than stretching or compressing the values.
+            <br><br>
+
+            Shown below is the complete process for one image pair.
+        </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/1.4/img1_warped.png">
+                <figcaption>Warped Left Image of Campus</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/1.4/img2_shifted.png">
+                <figcaption>Shifted Right Image of Campus</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/1.4/img1_padded.png">
+                <figcaption>Padded Left Image of Campus</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/1.4/img2_padded.png">
+                <figcaption>Padded Right Image of Campus</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/1.4/img1_mask.png">
+                <figcaption>Mask of Left Image of Campus</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/1.4/img2_mask.png">
+                <figcaption>Mask of Right Image of Campus</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/1.4/img1_img2_mosaic.png">
+                <figcaption>Mosaic of Intersection</figcaption>
+            </figure>
+        </div>
+
+        <p>
+            Shown below are additional examples of the resulting mosaics.
+        </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/1.4/img3_img4_mosaic.png">
+                <figcaption>Mosaic of Campus</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/1.4/img5_img6_mosaic.png">
+                <figcaption>Mosaic of Park</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div>
+        <h2>Part 2: Feature Matching for Autostitching (TODO)</h2>
+    </div>
+
+    <div>
+        <h2>Conclusion (TODO) </h2>
+            <p>
+                
+            </p>
     </div>
 </div>
 </body>
