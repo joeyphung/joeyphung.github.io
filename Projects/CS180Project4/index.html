@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CS 180 Project 4</title>
+
+    <style>
+        img {
+            max-width: 100%;   /* don't overflow container*/
+            width: 100%;       /* So images fill their containers */
+            height: auto;      /* keeps aspect ratio */
+        }
+
+                
+        /* For smaller images that shouldn't be blurred */
+        .img-small {
+            image-rendering: pixelated; /* Prevents the image from getting blurred */
+            width: 200px;               /* fixed width for the image */
+        }
+        
+        /* Used for images in a row, class of div */
+        .image-row {
+            display: flex;                  
+            flex-wrap: nowrap;             /* keep them on the same row */
+            gap: 25px;                     /* Gap between figures */
+            justify-content: center;       /* center the row */
+            margin: 25px 100px 25px 100px; /* spacing between container and everything else */
+        }
+
+        .img-bordered {
+            border: 5px solid black;   /* thickness + color */
+            border-radius: 8px;        /* rounded corners */
+            padding: 0px;              /* space between img and border */
+        }
+
+        /* For images with captions, used inside an image-row */
+        figure {
+            flex: 1 1 400px;         /* The 1 1 values allows the image to grow or shrink, i    mage containers start at 400px */
+            max-width: 400px;        /* Caps the containers width */
+            margin: 0px;             /* Gets rid of the margin around the images so that gap in image-row can set it  */
+            text-align: center;      /* centers captions below each image */
+            min-width: 0;             /* Allows images to stay the same size when they shrink */
+        }
+
+        video {
+            flex: 1 1 400px;         /* The 1 1 values allows the image to grow or shrink, i    mage containers start at 400px */
+            max-width: 400px;        /* Caps the containers width */
+            margin: 0px;             /* Gets rid of the margin around the images so that gap in image-row can set it  */
+            text-align: center;      /* centers captions below each image */
+            min-width: 0;             /* Allows images to stay the same size when they shrink */
+        }
+    </style>
+    <link rel="stylesheet" href="/assets/style.css">
+
+    <!-- Allows for latex -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/index.html">Home</a></li>
+            <li><a href="/Projects/index.html">Projects</a></li>
+            <li><a href="/assets/Resume Joey-Tai Phung.pdf">Resume</a></li>
+        </ul>
+    </nav>
+
+<div class="text">
+    <h1>CS 180 Project 4: Neural Radiance Fields! </h1>
+
+    <div>
+        <h2>Introduction</h2>
+        <p>
+        This project explores Neural Radiance Fields, a method for reconstructing three-dimensional scenes from multi-view images using a fully connected neural network and volumetric rendering. The assignment begins with camera calibration and structured data capture, establishing the geometric foundations needed to recover accurate camera poses. A simple two-dimensional neural field is then implemented to build intuition for positional encoding and coordinate-based MLPs. Finally, these components are extended to a full NeRF pipeline that generates novel-view renderings of both a provided multiview dataset and a custom-captured object.
+        </p>
+    </div>
+
+    <div>
+        <h2>Part 0: Calibrating Your Camera and Capturing a 3D Scan</h2>
+
+        <p>
+        For the first part of this project, I captured a set of images to calibrate my camera and build a NeRF of my object. ArUco tags were used as visual tracking targets, providing a reliable way to detect the same 3D keypoints across different images.
+        </p>
+
+        <h3>Part 0.1: Calibrating Your Camera</h3>
+
+        <p> I captured approximately fifty images of the calibration tags from different viewpoints on a table. Each image was processed by detecting the tag corners and associating them with their corresponding three-dimensional world coordinates. Because the calibration tag measured 60 mm by 60 mm, I defined the corner coordinates as \((0, 0, 0)\), \((0.06, 0, 0)\), \((0.06, 0.06, 0)\), and \((0, 0.06, 0)\). These coordinates ended up being slightly different when I did my custom object as I printed an A4 document on a us letter sized paper.
+        
+        <br><br>
+        The calibration step uses <code>cv.calibrateCamera()</code> to estimate the camera intrinsics, specifically the camera matrix and distortion coefficients. The function receives a list of object points that describe the three-dimensional corner positions and a list of image points that correspond to the detected two-dimensional corner projections.
+
+        <br><br>
+        Shown below are two example images used during the calibration process.
+        </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part 0 imgs/IMG_7455.JPEG">
+                <figcaption>Calibration Image 1</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 0 imgs/IMG_7456.JPEG">
+                <figcaption>Calibration Image 2</figcaption>
+            </figure>
+        </div>
+
+        <h3>Part 0.2: Capturing a 3D Object Scan</h3>
+            <p>
+            I captured approximately fifty images of the calibration tags with an object placed on top of them. The system allowed using either a single tag or the full set of tags from the calibration page. I chose to use all six tags because this guaranteed that at least one tag remained visible across all viewing angles.
+
+            <br><br>
+            Shown below are two example images used for estimating the camera pose.
+            </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part 0 imgs/IMG_7564.JPEG">
+                <figcaption>Steve Image 1</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 0 imgs/IMG_7565.JPEG">
+                <figcaption>Steve Image 2</figcaption>
+            </figure>
+        </div>
+
+        <h3>Part 0.3: Estimating Camera Pose</h3>
+            <p>
+            I used the intrinsic parameters of the camera to estimate the camera pose for each image of the object. This follows the classical perspective n point problem. Given a set of three dimensional points in world coordinates and their corresponding two dimensional projections in an image, the goal is to recover the camera extrinsic parameters, which consist of the rotation and translation. I used the function <code>cv2.solvePnP()</code> to obtain a rotation vector and a translation vector for each image. These outputs were then combined to form the camera to world transformation matrix (c2w).
+
+            <br><br>
+            The pose estimation results were visualized by rendering the camera frustums in three dimensions using viser.
+            </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part 0 imgs/p0 img1.png">
+                <figcaption>Viser View 1</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 0 imgs/p0 img2.png">
+                <figcaption>Viser View 2</figcaption>
+            </figure>
+        </div>
+
+        <h3>Part 0.4: Undistorting Images and Creating a Dataset</h3>
+            <p>
+            Using the camera intrinsics, the images were undistorted with <code>cv2.undistort()</code>, which removed lens distortion from the captures. This step is essential because NeRF assumes an ideal pinhole camera model without distortion.
+
+            <br><br>
+            A suitable maximum side length of 300 pixels was chosen for the images. This resolution kept the training process tractable while preserving as much detail as possible. All images were resized so that their longest side did not exceed this value.
+
+            <br><br>
+            The images and their corresponding extrinsic parameters were then divided into a training set and a validation set with 90 percent going to the training set. A test set was created by selecting one of the extrinsic translations as a reference point and generating a circular trajectory around the object, always pointing toward the origin. All resulting data was saved into a single npz file for use during training.
+            </p>
+            
+    </div>
+
+    <div>
+        <h2>Part 1: Fit a Neural Field to a 2D Image</h2>
+
+        <p>
+        I trained a Neural Field that maps a pixel coordinate (u, v) to a predicted color (r, g, b). The goal in this section is to optimize the field so that it represents a single 2D image as accurately as possible.
+        </p>
+
+        <h3>Architecture</h3>
+
+        <p>
+        The model is composed of successive linear layers with ReLU activations, followed by a final sigmoid layer to ensure that the predicted color values lie in the range [0, 1]. Before entering the network, each input coordinate is transformed using a Sinusoidal Positional Encoding (PE), which expands its dimensionality. Positional encoding allows the model to represent high-frequency spatial detail that would otherwise be difficult for a standard MLP to capture.
+
+        <br><br>
+        In my implementation, the positional encoding used a max positional encoding frequency value (L) equal to 10, and each hidden layer had width 256. I also experimented with different hyperparameters, including reducing the hidden dimension to 16 and lowering the positional encoding level to 1.
+
+        <br><br>
+        Training used an MSE loss and the Adam optimizer with a learning rate of 1e-2. The reconstruction quality was measured using peak signal to noise ratio (PSNR), which is defined by the equation \( PSNR = 10 \cdot \log_{10} \left( \frac{1}{MSE} \right) \). Image reconstruction was performed by passing every pixel coordinate of the image through the model and assembling the predicted RGB values back into an image.
+        </p>
+
+        <h3>Results</h3>
+
+        <p>
+        Shown below are the reconstructed images at various training iterations as the model attempts to fit the target image of a fox. These snapshots illustrate how the Neural Field progressively captures low-frequency structure before converging toward high-frequency detail.
+        </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part 1 imgs/fox_0.png">
+                <figcaption>Fox at Epoch 0</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 1 imgs/fox_100.png">
+                <figcaption>Fox at Epoch 100</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 1 imgs/fox_200.png">
+                <figcaption>Fox at Epoch 200</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 1 imgs/fox_600.png">
+                <figcaption>Fox at Epoch 600</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 1 imgs/fox_1000.png">
+                <figcaption>Fox at Epoch 1000</figcaption>
+            </figure>
+        </div>
+
+        <p>
+        Shown below are the reconstructed images at various training iterations as the model fits a custom picture of Berkeley, along with the corresponding PSNR curve that tracks reconstruction quality over time.
+        </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part 1 imgs/berkeley_0.png">
+                <figcaption>Berkeley at Epoch 0</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 1 imgs/berkeley_100.png">
+                <figcaption>Berkeley at Epoch 100</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 1 imgs/berkeley_200.png">
+                <figcaption>Berkeley at Epoch 200</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 1 imgs/berkeley_600.png">
+                <figcaption>Berkeley at Epoch 600</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 1 imgs/berkeley_1000.png">
+                <figcaption>Berkeley at Epoch 1000</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 1 imgs/psnr_training_on_custom.jpg">
+                <figcaption>PSNR Curve for Berkeley</figcaption>
+            </figure>
+        </div>
+
+        <p>
+        Finally, the image below shows a 2×2 grid of reconstruction results generated by varying the maximum positional encoding frequency and the hidden layer width. The two values of L used were 1 and 10, and the two hidden layer widths were 16 and 256. Horizontally, the images vary by hidden layer width, while vertically they vary by maximum positional encoding frequency. Notice that the images on the bottom row lack high-frequency details.
+        </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part 1 imgs/c_tl.png">
+                <figcaption>L = 10, Hidden Dim = 16</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 1 imgs/c_tr.png">
+                <figcaption>L = 10, Hidden Dim = 256</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part 1 imgs/c_bl.png">
+                <figcaption>L = 1, Hidden Dim = 16</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 1 imgs/c_br.png">
+                <figcaption>L = 1, Hidden Dim = 256</figcaption>
+            </figure>
+        </div>
+        
+    </div>
+
+    <div>
+        <h2>Part 2: Fit a Neural Radiance Field from Multi-view Images</h2>
+
+        <h3>Part 2.1: Create Rays from Cameras</h3>
+            <p>
+            Here I implement three functions that support batching.
+
+            <br><br>
+            The first function, <code>transform</code>, takes a camera-to-world (c2w) transformation and a point in camera space (xc) and converts it to a point in world space (xw). This is done by multiplying xc by the rotation matrix from c2w and then adding the translation vector from c2w.
+
+            <br><br>
+            The second function, <code>pixel_to_camera</code>, takes a camera intrinsic matrix (K), a pixel coordinate (uv), and a depth (s) and transforms the pixel coordinate back into the camera coordinate system. The pixel is first converted to homogeneous coordinates, then multiplied by the inverse of K, and finally scaled by s.
+
+            <br><br>
+            The final function, <code>pixel_to_ray</code>, takes a camera intrinsic matrix (K), a camera-to-world transformation (c2w), and a pixel coordinate (uv) and converts it to a ray with an origin and normalized direction. The pixel is first converted to a camera coordinate at depth 1, then transformed to world coordinates. The ray origin is given by the translation component of c2w, and the ray direction is computed from the world coordinate and the ray origin.   
+            </p>
+
+            <h3>Part 2.2: Sampling</h3>
+            <p>
+            Here I implement two additional functions that support batching.
+
+            <br><br>
+            The first function, <code>sample_rays</code>, takes a number N and randomly samples N rays from all of the rays in a <code>RaysData</code> object. It first computes a grid of all pixel coordinates in an image, which is then converted to rays using <code>pixel_to_ray</code>. These rays are stored as an attribute of the <code>RaysData</code> object. When <code>sample_rays</code> is called, it randomly selects N indices and returns the corresponding rays from this stored list.
+
+            <br><br>
+            The second function, <code>sample_along_rays</code>, takes ray origins, ray directions, and optional parameters such as perturb, near, and far. It discretizes each ray into 3D samples, uniformly spaced along the ray according to n_samples between near and far. To prevent overfitting from a fixed set of points, a small perturbation is added to each sample, drawn from a uniform distribution of (-width / 2, width / 2).
+            </p>
+        
+            <h3>Part 2.3: Putting the Dataloading All Together</h3>
+            <p>
+            Here the <code>RaysData</code> object is implemented, which serves as a dataloader for the model. It is able to return ray origins, ray directions, and the corresponding pixel colors.
+
+            <br><br>
+            Shown below are the camera frustums with their rays visualized in Viser. On the left, each frustum emits a single ray, while on the right, one camera frustum emits one hundred randomly sampled rays. The dots along each ray represent the 3D sample points taken along that ray.
+            </p>
+        
+            <div class="image-row">
+                <figure>
+                    <img src="./images/part 2 imgs/4.png">
+                    <figcaption>1 Ray per Frustum</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/part 2 imgs/5.png">
+                    <figcaption>100 Rays, 1 Frustum</figcaption>
+                </figure>
+            </div>
+
+            <h3>Part 2.4: Neural Radiance Field</h3>
+            <p>
+            Here the architecture of the NeRF model is constructed. This model is significantly more complex than its 2D counterpart because of the complexity of the scene it is modeling. Positional encodings are applied to both the world coordinates and the ray directions. The world coordinates are encoded with L = 10, while the ray directions use L = 4. All hidden layers have width 256.
+
+            <br><br>
+            The network uses a skip connection in the middle of the MLP, where the original input (after positional encoding) is concatenated back into the feature stream to help the model preserve high-frequency information. The network outputs two quantities through separate heads: one head predicts the density and the other predicts the color. I replaced the ReLU activation in the density head with a SoftPlus activation to improve training stability.
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/part 2 imgs/mlp_nerf.png">
+                    <figcaption>NeRF Architecture</figcaption>
+                </figure>
+            </div>
+
+            <h3>Part 2.5: Volume Rendering</h3>
+            <p>
+            The last function I implemented was <code>volrend</code>, which performs volumetric rendering to produce a final color for each ray. It takes the predicted density values (sigmas), RGB colors, and step sizes, and uses a discrete approximation of the NeRF volume rendering equation.
+
+            <br><br>
+            Each density value is converted into an alpha representing how much light is absorbed at that sample. These alphas are combined with per-sample transmittance to weight the contribution of each color along the ray. The final pixel color is obtained by accumulating these weighted colors, effectively simulating how light travels through a semi-transparent volume.
+            </p>
+
+            <h4>Results</h4>
+            <p>
+                Shown below is a rendering of the Lego scene from a viewpoint during different iterations of training, along with the corresponding PSNR curve, and a spherical rendering of the Lego model generated by orbiting the camera around the scene.
+            </p>
+
+            <div class="image-row">
+                <figure>
+                    <img src="./images/part 2 imgs/test_view_0.jpg">
+                    <figcaption>Lego Epoch 0</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/part 2 imgs/test_view_100.jpg">
+                    <figcaption>Lego Epoch 100</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/part 2 imgs/test_view_200.jpg">
+                    <figcaption>Lego Epoch 200</figcaption>
+                </figure>
+                </figure>
+                <figure>
+                    <img src="./images/part 2 imgs/test_view_600.jpg">
+                    <figcaption>Lego Epoch 600</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/part 2 imgs/test_view_999.jpg">
+                    <figcaption>Lego Epoch 1000</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/part 2 imgs/psnr_training.jpg">
+                    <figcaption>Lego Training PSNR</figcaption>
+                </figure>
+                <video src="./images/part 2 imgs/lego_test_views.mp4" autoplay loop muted playsinline></video>
+            </div>
+
+            <h3>Part 2.6: Training With Your Own Data</h3>
+            <p>
+            I decided to train on a Steve figurine from the Minecraft movie.
+
+            <br><br>
+            I used an MSE loss and trained the model with an AdamW optimizer with a learning rate of 5e-4 and a weight decay of 1e-5. The weight decay helped reduce overfitting and improved generalization. For sampling, I used near = 0.02 and far = 0.5 with 64 samples per ray, which I found to best cover the spatial extent of the object. I also increased the number of training epochs from 1000 to 10000 to allow the model to converge more fully on the scene.
+
+            <br><br>
+            Shown below is a rendering of a scene from a fixed viewpoint at different stages of training.
+            </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part 3 imgs/test_view_0.jpg">
+                <figcaption>Steve Epoch 0</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 3 imgs/test_view_1000.jpg">
+                <figcaption>Steve Epoch 1000</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 3 imgs/test_view_2000.jpg">
+                <figcaption>Steve Epoch 2000</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 3 imgs/test_view_6000.jpg">
+                <figcaption>Steve Epoch 6000</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 3 imgs/test_view_9999.jpg">
+                <figcaption>Steve Epoch 10000</figcaption>
+            </figure>
+        </div>
+
+        <p>
+            Shown below are the training loss and PSNR curves, along with a GIF of the camera circling around Steve.
+        </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part 3 imgs/training_loss.jpg">
+                <figcaption>Training Loss</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part 3 imgs/psnr_training.jpg">
+                <figcaption>Training PSNR</figcaption>
+            </figure>
+            <video src="./images/part 3 imgs/custom_circling_views.mp4" autoplay loop muted playsinline></video>
+            
+        </div>
+    </div>
+
+    <div>
+        <h2>Conclusion </h2>
+        <p>
+        Building the full NeRF system meant combining camera calibration, ray-based rendering, and a neural network that learns how a scene looks from different angles. The experiments showed how tools like positional encoding and sampling help the model learn detailed color and shape information from images alone. Training on my Steve figurine highlighted both the strengths of NeRF, such as generating accurate new views, and its challenges, including long training times and the need for good calibration. Overall, this project showed how a NeRF can use a set of photos to rebuild a 3D scene.
+        </p>
+    </div>
+</div>
+</body>
+</html>
