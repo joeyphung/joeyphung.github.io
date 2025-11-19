@@ -41,7 +41,13 @@
             max-width: 200px;                 
             max-height: 200px;                
             margin: 0px 0px 0.5em 0px;         /* Margin below the project image*/
-        }                                     
+        }      
+        
+        .project_video {                        
+            max-width: 200px;                 
+            max-height: 200px;                
+            margin: 0px 0px 0.5em 0px;         /* Margin below the project video*/
+        }   
 
         .project_description {                
             margin: 0 0 0.5em 0;               /* Margin below the project description*/
@@ -177,8 +183,9 @@
 
             <div class="project">
                 <h1>Neural Radiance Fields</h1>
+                <video class="project_video" src="./CS180Project4/images/part 3 imgs/custom_circling_views.mp4" autoplay loop muted playsinline></video>
                 <p class="project_description">
-                    TODO
+                    Implemented a full Neural Radiance Field (NeRF) pipeline from scratch, integrating camera calibration, ray marching, and volumetric rendering to reconstruct photorealistic 3D scenes from custom multi-view datasets.
                 </p>
                 <ul class="project_stack">
                     <li class="project_stack-item">Python</li>

@@ -10,7 +10,6 @@
             height: auto;      /* keeps aspect ratio */
         }
 
-                
         /* For smaller images that shouldn't be blurred */
         .img-small {
             image-rendering: pixelated; /* Prevents the image from getting blurred */
@@ -34,15 +33,16 @@
 
         /* For images with captions, used inside an image-row */
         figure {
-            flex: 1 1 400px;         /* The 1 1 values allows the image to grow or shrink, i    mage containers start at 400px */
+            flex: 1 1 400px;         /* The 1 1 values allows the image to grow or shrink, image containers start at 400px */
             max-width: 400px;        /* Caps the containers width */
             margin: 0px;             /* Gets rid of the margin around the images so that gap in image-row can set it  */
             text-align: center;      /* centers captions below each image */
             min-width: 0;             /* Allows images to stay the same size when they shrink */
         }
-
+        
+        /* Copied from figure, so it fits in image-row correctly */
         video {
-            flex: 1 1 400px;         /* The 1 1 values allows the image to grow or shrink, i    mage containers start at 400px */
+            flex: 1 1 400px;         /* The 1 1 values allows the image to grow or shrink, image containers start at 400px */
             max-width: 400px;        /* Caps the containers width */
             margin: 0px;             /* Gets rid of the margin around the images so that gap in image-row can set it  */
             text-align: center;      /* centers captions below each image */
@@ -84,7 +84,7 @@
 
         <h3>Part 0.1: Calibrating Your Camera</h3>
 
-        <p> I captured approximately fifty images of the calibration tags from different viewpoints on a table. Each image was processed by detecting the tag corners and associating them with their corresponding three-dimensional world coordinates. Because the calibration tag measured 60 mm by 60 mm, I defined the corner coordinates as \((0, 0, 0)\), \((0.06, 0, 0)\), \((0.06, 0.06, 0)\), and \((0, 0.06, 0)\). These coordinates ended up being slightly different when I did my custom object as I printed an A4 document on a us letter sized paper.
+        <p> I captured approximately fifty images of the calibration tags from different viewpoints on a table. Each image was processed by detecting the tag corners and associating them with their corresponding three-dimensional world coordinates. Because the calibration tag measured 60 mm by 60 mm, I defined the corner coordinates as \((0, 0, 0)\), \((0.06, 0, 0)\), \((0.06, 0.06, 0)\), and \((0, 0.06, 0)\). These coordinates ended up being slightly different when I did my custom object as I printed an A4 document on a US Letter sized paper.
         
         <br><br>
         The calibration step uses <code>cv.calibrateCamera()</code> to estimate the camera intrinsics, specifically the camera matrix and distortion coefficients. The function receives a list of object points that describe the three-dimensional corner positions and a list of image points that correspond to the detected two-dimensional corner projections.
@@ -349,7 +349,6 @@
                     <img src="./images/part 2 imgs/test_view_200.jpg">
                     <figcaption>Lego Epoch 200</figcaption>
                 </figure>
-                </figure>
                 <figure>
                     <img src="./images/part 2 imgs/test_view_600.jpg">
                     <figcaption>Lego Epoch 600</figcaption>
@@ -360,9 +359,11 @@
                 </figure>
                 <figure>
                     <img src="./images/part 2 imgs/psnr_training.jpg">
-                    <figcaption>Lego Training PSNR</figcaption>
+                    <figcaption>Lego Validation PSNR</figcaption>
                 </figure>
-                <video src="./images/part 2 imgs/lego_test_views.mp4" autoplay loop muted playsinline></video>
+                <figure>
+                    <video src="./images/part 2 imgs/lego_test_views.mp4" autoplay loop muted playsinline></video>
+                </figure>
             </div>
 
             <h3>Part 2.6: Training With Your Own Data</h3>
@@ -412,8 +413,9 @@
                 <img src="./images/part 3 imgs/psnr_training.jpg">
                 <figcaption>Training PSNR</figcaption>
             </figure>
-            <video src="./images/part 3 imgs/custom_circling_views.mp4" autoplay loop muted playsinline></video>
-            
+            <figure>
+                <video src="./images/part 3 imgs/custom_circling_views.mp4" autoplay loop muted playsinline></video>
+            </figure>
         </div>
     </div>
 
