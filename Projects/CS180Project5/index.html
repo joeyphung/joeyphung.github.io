@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CS 180 Project 5</title>
+
+    <style>
+        img {
+            max-width: 100%;   /* don't overflow container*/
+            width: 100%;       /* So images fill their containers */
+            height: auto;      /* keeps aspect ratio */
+        }
+
+        /* For smaller images that shouldn't be blurred */
+        .img-small {
+            image-rendering: pixelated; /* Prevents the image from getting blurred */
+            width: 200px;               /* fixed width for the image */
+        }
+        
+        /* Used for images in a row, class of div */
+        .image-row {
+            display: flex;                  
+            flex-wrap: nowrap;             /* keep them on the same row */
+            gap: 25px;                     /* Gap between figures */
+            justify-content: center;       /* center the row */
+            margin: 25px 100px 25px 100px; /* spacing between container and everything else */
+        }
+
+        .img-bordered {
+            border: 5px solid black;   /* thickness + color */
+            border-radius: 8px;        /* rounded corners */
+            padding: 0px;              /* space between img and border */
+        }
+
+        /* For images with captions, used inside an image-row */
+        figure {
+            flex: 1 1 400px;         /* The 1 1 values allows the image to grow or shrink, image containers start at 400px */
+            max-width: 400px;        /* Caps the containers width */
+            margin: 0px;             /* Gets rid of the margin around the images so that gap in image-row can set it  */
+            text-align: center;      /* centers captions below each image */
+            min-width: 0;             /* Allows images to stay the same size when they shrink */
+        }
+
+        /* Centers code blocks */
+        .code-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;   /* centers horizontally */
+        }
+
+        /* Makes the <pre> shrink to fit content instead of stretching */
+        .code-container pre {
+            background: #f4f4f4;
+            padding: 0px calc(0px + 4ch) 0px 0px;
+            border-radius: 5px;
+            overflow-x: auto;           /* allow horizontal scroll if needed */
+            box-sizing: border-box;    /* padding included in width */
+        }
+
+        .code-container pre code {
+            font-size: 1rem;
+            display: block;
+            border: none !important;
+        }
+        
+    </style>
+    <link rel="stylesheet" href="/assets/style.css">
+
+    <!-- Allows for latex -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/index.html">Home</a></li>
+            <li><a href="/Projects/index.html">Projects</a></li>
+            <li><a href="/assets/Resume Joey-Tai Phung.pdf">Resume</a></li>
+        </ul>
+    </nav>
+
+<div class="text">
+    <h1>CS 180 Project 5: Fun with Diffusion Models</h1>
+
+    <div>
+        <h2>Introduction</h2>
+        <p>
+            TODO
+        </p>
+    </div>
+
+    <div>
+        <h1>Part A</h1>
+
+        <h2>Part 0: Setup</h2>
+
+        <p> 
+            In this section I use a DeepFloyd IF diffusion model to generate images. Text prompts are first produced using HuggingFace clusters and saved in a pth file. These prompts are fed into the model in two stages. The first stage produces 64x64 images, and the second stage upsamples them to 256x256. One adjustable parameter in this pipeline is the number of inference steps, which directly influences image quality by controlling how much refinement occurs during sampling.
+            
+            <br><br>
+            For all experiments in Part A, I used a random seed of 67. Shown below are three prompts evaluated at two settings of the inference step count: 10 and 1000. The top row corresponds to 10 steps, and the bottom row corresponds to 1000 steps. Notice that the higher step count produces images with sharper details and more vivid colors.
+        </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/0.0/10 inference/stage_2_10_0.jpg">
+                <figcaption>an oil painting of a capybara in a Japanese hot spring</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/0.0/10 inference/stage_2_10_1.jpg">
+                <figcaption>a photo of a plate of spaghetti with one giant meatball</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/0.0/10 inference/stage_2_10_2.jpg">
+                <figcaption>a watercolor painting of a cute sleeping panda</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/0.0/1000 inference/stage_2_1000_0.jpg">
+                <figcaption>an oil painting of a capybara in a Japanese hot spring</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/0.0/1000 inference/stage_2_1000_1.jpg">
+                <figcaption>a photo of a plate of spaghetti with one giant meatball</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/0.0/1000 inference/stage_2_1000_2.jpg">
+                <figcaption>a watercolor painting of a cute sleeping panda</figcaption>
+            </figure>
+        </div>
+        
+        <h2>Part 1: Sampling Loops</h2>
+
+        <h3>1.1 Implementing the Forward Process</h3>
+
+        <p>
+            Here I implement the forward process of diffusion, which takes a clean image and adds noise to it. The process is defined by \( q(x_t \mid x_0) = \mathcal{N}(x_t; \sqrt{\bar{\alpha}_t} x_0,(1 - \bar{\alpha}_t) I) \), 
+            which is equivalent to computing \( x_t = \sqrt{\bar{\alpha}_t} x_0 + \sqrt{1 - \bar{\alpha}_t}\epsilon \) where \( \epsilon \sim \mathcal{N}(0, 1) \). 
+
+            <br><br>
+            The code for the <code>forward</code> function below shows this computation in practice. The variable <code>alphas_cumprod</code> stores the cumulative noise schedule for the DeepFloyd model and has length 1000, which corresponds to the number of diffusion steps.
+        </p>
+
+    <div class="code-container">
+    <pre><code>
+    alpha_bar = alphas_cumprod[t]
+    eps = torch.randn_like(im)
+    im_noisy = alpha_bar.sqrt() * im + (1 - alpha_bar).sqrt() * eps
+    </code></pre>
+    </div>
+
+        <p>
+            Shown below is an image of the Berkeley Campanile at different noise levels.
+        </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_0.jpg">
+                <figcaption>Berkeley Campanile</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_250.jpg">
+                <figcaption>Noisy Campanile at t=250</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_500.jpg">
+                <figcaption>Noisy Campanile at t=500</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_750.jpg">
+                <figcaption>Noisy Campanile at t=750</figcaption>
+            </figure>
+        </div>
+
+        <h3>1.2 Classical Denoising</h3>
+
+        <p>
+            Next I attempt to denoise the images using classical filtering methods. A Gaussian blur is applied in an effort to reduce the noise, but the results are noticeably poor. For this experiment I used a kernel size of 15 and a sigma value of 3.
+        </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_250.jpg">
+                <figcaption>Noisy Campanile at t=250</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_500.jpg">
+                <figcaption>Noisy Campanile at t=500</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_750.jpg">
+                <figcaption>Noisy Campanile at t=750</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_250_classical_denoised.jpg">
+                <figcaption>Gaussian Blur Denoising at t=250</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_500_classical_denoised.jpg">
+                <figcaption>Gaussian Blur Denoising at t=500</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_750_classical_denoised.jpg">
+                <figcaption>Gaussian Blur Denoising at t=750</figcaption>
+            </figure>
+        </div>
+
+        <h3>1.3 One-Step Denoising</h3>
+
+        <p>
+            A pretrained diffusion model is now used for denoising. The model is a UNet trained on a large dataset of noisy and clean image pairs, which allows it to estimate the Gaussian noise present in an input image. The UNet is conditioned on the amount of noise by receiving the timestep \( t \) as an additional input. Since the diffusion model was originally trained with text conditioning, I provide the text embedding for "a high quality photo" during inference.
+            
+            <br><br>
+            The denoising step proceeds as follows. The noisy image \( x_t \) is passed into the UNet, which predicts the noise \( \epsilon \). This noise prediction is then removed from the noisy image using the closed-form expression \( x_0 = \frac{x_t - \sqrt{1 - \bar{\alpha}_t}\epsilon}{\sqrt{\bar{\alpha}_t}} \) to obtain a denoised image. Shown below are the results of this one-step denoising procedure. Notice that higher levels of noise, the denoised image starts to resemble the original image less and less.
+        </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_0.jpg">
+                <figcaption>Berkeley Campanile</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_250.jpg">
+                <figcaption>Noisy Campanile at t=250</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_500.jpg">
+                <figcaption>Noisy Campanile at t=500</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_750.jpg">
+                <figcaption>Noisy Campanile at t=750</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_250_one_step_denoised.jpg">
+                <figcaption>One-Step Denoised Campanile at t=250</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_500_one_step_denoised.jpg">
+                <figcaption>One-Step Denoised Campanile at t=500</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_750_one_step_denoised.jpg">
+                <figcaption>One-Step Denoised Campanile at t=750</figcaption>
+            </figure>
+        </div>
+
+        <h3>1.4 Iterative Denoising</h3>
+
+        <p>
+        Diffusion models are designed to denoise images iteratively. In this section I implement this process. In theory, one could start at \( t = 1000 \) and step backward one timestep at a time, but this is slow and computationally expensive. To speed up inference, we skip timesteps by using a sequence of strided values.
+        
+        <br><br>
+        The array <code>strided_timesteps</code> specifies the timesteps used during sampling, where <code>strided_timesteps[0]</code> is the largest value of \( t \) and corresponds to the noisiest image, while <code>strided_timesteps[-1]</code> corresponds to \( t = 0 \) and represents a clean image. For this experiment I used a starting timestep of 990 with a stride of 30.
+        
+        <br><br>
+        On the \( i \)-th denoising step we have \( t = \text{strided_timesteps}[i] \) and want to move to \( t' = \text{strided_timesteps}[i+1] \), which corresponds to transitioning from a noisier image to a slightly cleaner one. The update rule for producing the next image is  
+        \[
+            x_{t'} = 
+            \frac{\sqrt{\bar{\alpha}_{t'}}\beta_t}{1 - \bar{\alpha}_t}x_0
+            + 
+            \frac{\sqrt{\alpha_t}(1 - \bar{\alpha}_{t'})}{1 - \bar{\alpha}_t}x_t
+            + 
+            v_\sigma .
+        \]
+        Here \( x_t \) is the noisy image at timestep \( t \), \( x_{t'} \) is the less noisy image at timestep \( t' \), \( \alpha_t = \frac{\bar{\alpha}_t}{\bar{\alpha}_{t'}} \), \( \beta_t = 1 - \alpha_t \), and \( x_0 \) is our current estimate of the clean image obtained from one-step denoising. The term \( v_\sigma \) represents additional noise, which in the DeepFloyd model, is also predicted by the network.
+        
+        <br><br>
+        Shown below is a code snippet that implements the core logic of the <code>iterative_denoise</code> function, followed by a visualization of each iteration applied to a noisy image of the Campanile. Beneath that is a comparison between the original image, the iteratively denoised result, the one-step denoised result, and the classically filtered result. The iterative method produces the cleanest visual result, although it still does not perfectly match the original image.
+    </p>
+
+    <div class="code-container">
+    <pre><code>
+    strided_timesteps = torch.linspace(990, 0, 34).long()
+
+    alpha_bar = alphas_cumprod[t]
+    alpha_bar_prime = alphas_cumprod[prev_t]
+    alpha = alpha_bar / alpha_bar_prime
+    beta = 1 - alpha
+
+    x_o = (image - (1 - alpha_bar).sqrt() * noise_est) / alpha_bar.sqrt()
+    term1 = alpha_bar_prime.sqrt() * beta * x_o
+    term2 = alpha.sqrt() * (1 - alpha_bar_prime) * image
+    pred_mean = (term1 + term2) / (1 - alpha_bar)
+    pred_prev_image = add_variance(predicted_variance, t, pred_mean)
+    </code></pre>
+    </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.4/1.4_campanile_iterative_denoised_90.jpg">
+                <figcaption>Noisy Campanile at t=90</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.4/1.4_campanile_iterative_denoised_240.jpg">
+                <figcaption>Noisy Campanile at t=240</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.4/1.4_campanile_iterative_denoised_390.jpg">
+                <figcaption>Noisy Campanile at t=390</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.4/1.4_campanile_iterative_denoised_540.jpg">
+                <figcaption>Noisy Campanile at t=540</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.4/1.4_campanile_iterative_denoised_690.jpg">
+                <figcaption>Noisy Campanile at t=690</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.4/1.4_campanile_original.jpg">
+                <figcaption>Original</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.4/1.4_campanile_iterative_denoised.jpg">
+                <figcaption>Iteratively Denoised Campanile</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.4/1.4_campanile_one_step_denoised.jpg">
+                <figcaption>One-Step Denoised Campanile</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.4/1.4_campanile_classical_denoised.jpg">
+                <figcaption>Gaussian Blurred Campanile</figcaption>
+            </figure>
+        </div>
+
+        <h3>1.5 Diffusion Model Sampling</h3>
+        
+        <p>
+            The <code>iterative_denoise</code> function can also be used to generate images from scratch. By setting <code>i_start = 0</code> and initializing <code>im_noisy</code> with random noise, the model synthesizes an image through the full denoising trajectory. The prompt used for the five results shown below was "a high quality photo".
+        </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.5/1.5_sample_0.jpg">
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.5/1.5_sample_1.jpg">
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.5/1.5_sample_2.jpg">
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.5/1.5_sample_3.jpg">
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.5/1.5_sample_4.jpg">
+            </figure>
+        </div>
+
+        <h3>1.6 Classifier-Free Guidance (CFG)</h3>
+    
+        <p>
+            As shown in the previous section, the generated images are not very high quality. They can be improved using a technique called Classifier-Free Guidance (CFG). In CFG, we compute both a conditional and an unconditional noise estimate, denoted \( \epsilon_c \) and \( \epsilon_u \) respectively. The final noise estimate is then  
+            \[
+            \epsilon = \epsilon_u + \gamma(\epsilon_c - \epsilon_u),
+            \]
+            where \( \gamma \) controls the strength of the guidance. When \( \gamma = 0 \), the model produces an unconditional estimate. When \( \gamma = 1 \), the estimate is fully conditional. Higher quality samples are typically obtained when \( \gamma > 1 \).
+            
+            <br><br>
+            In this section I implement the <code>iterative_denoise_cfg</code> function, which extends the earlier <code>iterative_denoise</code> method by incorporating CFG. To obtain the unconditional noise estimate, I pass an empty prompt embedding corresponding to the null prompt <code>""</code>. The code snippet below shows the modifications needed to apply CFG during iterative denoising. Following that are five sampled images generated with \( \gamma = 7 \). 
+        </p>
+
+    <div class="code-container">
+    <pre><code>
+    cfg_noise_est = uncond_noise_est + scale * (noise_est - uncond_noise_est)
+
+    x_o = (image - (1 - alpha_bar).sqrt() * cfg_noise_est) / alpha_bar.sqrt()
+    </code></pre>
+    </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.6/1.6_sample_0.jpg">
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.6/1.6_sample_1.jpg">
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.6/1.6_sample_2.jpg">
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.6/1.6_sample_3.jpg">
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.6/1.6_sample_4.jpg">
+            </figure>
+        </div>
+
+        <h3>1.7.0 Image-to-image Translation</h3>
+
+        <p>
+            In this section I experiment with taking the original Campanile image, adding a small amount of noise, and then projecting it back onto the manifold of natural images without any text conditioning. This allows us to make controllable edits to an existing image, where adding more noise leads to larger edits. The idea works because denoising requires the diffusion model to infer missing details, which gives it the ability to hallucinate plausible structure. This process produces an image that is similar to the original in overall content but altered in a way that depends on the noise level. This follows the principles of the SDEdit algorithm.
+            
+            <br><br>
+            The procedure is implemented by first applying the <code>forward</code> function to add noise to the Campanile image, then running <code>iterative_denoise_cfg</code> with different starting indices in <code>strided_timesteps</code> to denoise it. The results are shown below. Images that start closer to the original (with less noise) remain more faithful, while those that begin from heavy noise eventually resemble random samples and share little resemblance to the input image.
+        </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_sample_1.jpg">
+                <figcaption>SDEdit with i_start=1</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_sample_3.jpg">
+                <figcaption>SDEdit with i_start=3</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_sample_5.jpg">
+                <figcaption>SDEdit with i_start=5</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_sample_7.jpg">
+                <figcaption>SDEdit with i_start=7</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_sample_10.jpg">
+                <figcaption>SDEdit with i_start=10</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_sample_20.jpg">
+                <figcaption>SDEdit with i_start=20</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_0.jpg">
+                <figcaption>Campanile</figcaption>
+            </figure>
+        </div>
+
+        <p>
+            Shown below are edits of two additional test images of my own, produced using the same procedure.
+        </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_mine_1_1.jpg">
+                <figcaption>SDEdit with i_start=1</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_mine_1_3.jpg">
+                <figcaption>SDEdit with i_start=3</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_mine_1_5.jpg">
+                <figcaption>SDEdit with i_start=5</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_mine_1_7.jpg">
+                <figcaption>SDEdit with i_start=7</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_mine_1_10.jpg">
+                <figcaption>SDEdit with i_start=10</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_mine_1_20.jpg">
+                <figcaption>SDEdit with i_start=20</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_house.jpg">
+                <figcaption>House</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_mine_2_1.jpg">
+                <figcaption>SDEdit with i_start=1</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_mine_2_3.jpg">
+                <figcaption>SDEdit with i_start=3</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_mine_2_5.jpg">
+                <figcaption>SDEdit with i_start=5</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_mine_2_7.jpg">
+                <figcaption>SDEdit with i_start=7</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_mine_2_10.jpg">
+                <figcaption>SDEdit with i_start=10</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_mine_2_20.jpg">
+                <figcaption>SDEdit with i_start=20</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.0/1.7.0_rollercoaster.jpg">
+                <figcaption>Rollercoaster</figcaption>
+            </figure>
+        </div>
+
+        <h3>1.7.1 Editing Hand-Drawn and Web Images</h3>
+
+        <p>
+            I then apply this procedure to non-realistic images to project them onto the natural image manifold. Shown below are three examples.
+        </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_media_1.jpg">
+                <figcaption>Panda at i_start=1</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_media_3.jpg">
+                <figcaption>Panda at i_start=3</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_media_5.jpg">
+                <figcaption>Panda at i_start=5</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_media_7.jpg">
+                <figcaption>Panda at i_start=7</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_media_10.jpg">
+                <figcaption>Panda at i_start=10</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_media_20.jpg">
+                <figcaption>Panda at i_start=20</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_media_original.jpg">
+                <figcaption>Panda</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_drawing_1_1.jpg">
+                <figcaption>Frog at i_start=1</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_drawing_1_3.jpg">
+                <figcaption>Frog at i_start=3</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_drawing_1_5.jpg">
+                <figcaption>Frog at i_start=5</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_drawing_1_7.jpg">
+                <figcaption>Frog at i_start=7</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_drawing_1_10.jpg">
+                <figcaption>Frog at i_start=10</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_drawing_1_20.jpg">
+                <figcaption>Frog at i_start=20</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_drawing_1_original.jpg">
+                <figcaption>Frog</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_drawing_2_1.jpg">
+                <figcaption>Cat at i_start=1</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_drawing_2_3.jpg">
+                <figcaption>Cat at i_start=3</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_drawing_2_5.jpg">
+                <figcaption>Cat at i_start=5</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_drawing_2_7.jpg">
+                <figcaption>Cat at i_start=7</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_drawing_2_10.jpg">
+                <figcaption>Cat at i_start=10</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_drawing_2_20.jpg">
+                <figcaption>Cat at i_start=20</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.1/1.7.1_drawing_2_original.jpg">
+                <figcaption>Cat</figcaption>
+            </figure>
+        </div>
+
+        <h3>1.7.2 Inpainting</h3>
+
+        <p>
+            The same procedure can be used to implement inpainting. Given an image \( x_{\text{orig}} \) and a binary mask \( m \), the goal is to produce a new image that preserves the original content where \( m = 0 \) and generates new content where \( m = 1 \).
+
+            <br><br>
+            To accomplish this, the CFG diffusion denoising loop is run as usual, but at every step we overwrite the unmasked regions of \( x_t \) with the noisy version of the original image. More precisely, after computing \( x_t \) we apply
+            \[
+            x_t \leftarrow mx_t + (1 - m)\text{forward}(x_{\text{orig}}, t).
+            \]
+            This ensures that the unmasked pixels remain fixed while the masked region is regenerated by the diffusion model.
+
+            <br><br>
+            Shown below are the relevant modifications to <code>iterative_denoise_cfg</code> needed to perform inpainting. Following that are three sets of results, each displaying the original image, the mask, the masked input, and the final inpainted output. Because inpainting is a task the diffusion model was not trained for, several sampling attempts were needed to obtain clean and visually consistent results.
+        </p>
+
+    <div class="code-container">
+    <pre><code>
+    pred_prev_image = mask * pred_prev_image + (1 - mask) * forward(original_image, prev_t)
+    </code></pre>
+    </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.7.2/1.7.2_campanile_.jpg">
+                <figcaption>Campanile</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.2/1.7.2_campanile_mask_.jpg">
+                <figcaption>Mask</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.2/1.7.2_campanile_replace.jpg">
+                <figcaption>Hole to Fill</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.2/1.7.2_campanile_inpainted.jpg">
+                <figcaption>Campanile</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.7.2/1.7.2_original_1_.jpg">
+                <figcaption>Beach</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.2/1.7.2_original_1_mask_.jpg">
+                <figcaption>Mask</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.2/1.7.2_original_1_replace.jpg">
+                <figcaption>Hole to Fill</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.2/1.7.2_original_1_inpainted.jpg">
+                <figcaption>Beach</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.7.2/1.7.2_original_2_.jpg">
+                <figcaption>Skyline</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.2/1.7.2_original_2_mask_.jpg">
+                <figcaption>Mask</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.2/1.7.2_original_2_replace.jpg">
+                <figcaption>Hole to Fill</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.2/1.7.2_original_2_inpainted.jpg">
+                <figcaption>Skyline</figcaption>
+            </figure>
+        </div>
+
+        <h3>1.7.3 Text-Conditional Image-to-image Translation</h3>
+
+        <p>
+            Here I apply the same procedure as in Section 1.7.0, similar to SDEdit, but now guide the projection using a text prompt. The conditional prompt is no longer fixed to <code>"a high quality photo"</code> and can be replaced with any prompt of my choosing. Shown below are edits of the Campanile and two additional test images using custom conditional prompts.
+        </p>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_campanile_1.jpg">
+                <figcaption>Grain Silo at noise level 1</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_campanile_3.jpg">
+                <figcaption>Grain Silo at noise level 3</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_campanile_5.jpg">
+                <figcaption>Grain Silo at noise level 5</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_campanile_7.jpg">
+                <figcaption>Grain Silo at noise level 7</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_campanile_10.jpg">
+                <figcaption>Grain Silo at noise level 10</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_campanile_20.jpg">
+                <figcaption>Grain Silo at noise level 20</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.1-1.3/campanile_0.jpg">
+                <figcaption>Campanile</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_chocolate_bar_1.jpg">
+                <figcaption>Shipping Container at noise level 1</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_chocolate_bar_3.jpg">
+                <figcaption>Shipping Container at noise level 3</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_chocolate_bar_5.jpg">
+                <figcaption>Shipping Container at noise level 5</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_chocolate_bar_7.jpg">
+                <figcaption>Shipping Container at noise level 7</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_chocolate_bar_10.jpg">
+                <figcaption>Shipping Container at noise level 10</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_chocolate_bar_20.jpg">
+                <figcaption>Shipping Container at noise level 20</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_chocolate_bar_.jpg">
+                <figcaption>Chocolate Bar</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_fire_hydrant_1.jpg">
+                <figcaption>Fire Hydrant at noise level 1</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_fire_hydrant_3.jpg">
+                <figcaption>Fire Hydrant at noise level 3</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_fire_hydrant_5.jpg">
+                <figcaption>Fire Hydrant at noise level 5</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_fire_hydrant_7.jpg">
+                <figcaption>Fire Hydrant at noise level 7</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_fire_hydrant_10.jpg">
+                <figcaption>Fire Hydrant at noise level 10</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_fire_hydrant_20.jpg">
+                <figcaption>Fire Hydrant at noise level 20</figcaption>
+            </figure>
+            <figure>
+                <img src="./images/part_a/1.7.3/1.7.3_fire_hydrant.jpg">
+                <figcaption>R2-D2</figcaption>
+            </figure>
+        </div>
+
+        <h3>1.8 Visual Anagrams</h3>
+
+        <p>
+            Here I implement visual anagrams to create optical illusions with diffusion models. The goal is to generate an image that appears as one concept when viewed upright and as a different concept when viewed upside down.
+
+            <br><br>
+            To accomplish this, the image \( x_t \) is denoised at timestep \( t \) using prompt \( p_1 \) to produce a noise estimate \( \epsilon_1 \). The same image is then flipped upside down and denoised with prompt \( p_2 \) to produce \( \epsilon_2 \). After obtaining these estimates, I flip \( \epsilon_2 \) back to the original orientation, apply CFG to both, and then average them to obtain the final noise estimate \( \epsilon \). More succinctly,
+            \[
+                \epsilon_1 = \text{CFG of UNet}(x_t, t, p_1)
+            \]
+            \[
+                \epsilon_2 = \text{flip}(\text{CFG of UNet}(\text{flip}(x_t), t, p_2))
+            \]
+            \[
+                \epsilon = \frac{\epsilon_1 + \epsilon_2}{2}
+            \]
+            Note that for this section and all sections that follow, two conditional prompts are used, which produces two predicted variances. I chose to average these variances to get the overall predicted variance.
+    
+            <br><br>       
+            Shown below are the relevant modifications to <code>iterative_denoise_cfg</code> needed to implement the <code>visual_anagrams</code> function, along with two visual anagrams I was able to generate. The prompts I used were, "upright sword centered, polished metal blade", "upright candle centered, warm glowing flame", "a lithography of a standing human figure, arms raised, centered silhouette background", and "a lithography of a bare symmetrical tree, centered silhouette on plain background".
+        </p>
+
+    <div class="code-container">
+    <pre><code>
+    image = torch.randn((1, 3, 64, 64), device=device).half()
+
+    noise_est1, predicted_variance1 = torch.split(model_output_1, image.shape[1], dim=1)
+    noise_est2, predicted_variance2 = torch.split(model_output_2, image.shape[1], dim=1)
+    uncond_noise_est, _ = torch.split(uncond_model_output, image.shape[1], dim=1)
+    predicted_variance = (predicted_variance1 + predicted_variance2) / 2
+
+    noise_est2 = TF.vflip(noise_est2)
+
+    cfg_noise_est1 = uncond_noise_est + scale * (noise_est1 - uncond_noise_est)
+    cfg_noise_est2 = uncond_noise_est + scale * (noise_est2 - uncond_noise_est)
+    cfg_noise_est = (cfg_noise_est1 + cfg_noise_est2) / 2
+    </code></pre>
+    </div>
+
+    <div class="image-row">
+        <figure>
+            <img src="./images/part_a/1.8/1.8_human_tree.jpg">
+            <figcaption>Human Tree Anagram</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_a/1.8/1.8_sword_candle.jpg">
+            <figcaption>Sword Candle Anagram</figcaption>
+        </figure>
+    </div>
+
+        <h3>1.9 Hybrid Images</h3>
+
+    <p>
+        Here I implement factorized diffusion to create hybrid images. In this approach, the composite noise estimate \( \epsilon \) is constructed by predicting noise using two different text prompts and then combining the low frequencies from one estimate with the high frequencies from the other.
+
+        \[
+            \epsilon_1 = \text{CFG of UNet}(x_t, t, p_1)
+        \]
+        \[
+            \epsilon_2 = \text{CFG of UNet}(x_t, t, p_2)
+        \]
+        \[
+            \epsilon = f_{\text{lowpass}}(\epsilon_1) + f_{\text{highpass}}(\epsilon_2)
+        \]
+
+        <br><br>
+        Shown below are the relevant modifications to <code>iterative_denoise_cfg</code> needed to implement the <code>make_hybrids</code> function, followed by three hybrid images I was able to generate. The prompts I used were "oil painting style, a panda", "oil painting style, a canyon", "a lithography of a skull", "a lithography of waterfalls", "a watercolor of a panda", and "a watercolor of a library". For the filtering step, I used a kernel size of 33 and a sigma value of 2.
+    </p>
+
+    <div class="code-container">
+    <pre><code>
+    image = torch.randn((1, 3, 64, 64), device=device).half()
+
+    noise_est1, predicted_variance1 = torch.split(model_output_1, image.shape[1], dim=1)
+    noise_est2, predicted_variance2 = torch.split(model_output_2, image.shape[1], dim=1)
+    uncond_noise_est, _ = torch.split(uncond_model_output, image.shape[1], dim=1)
+    predicted_variance = (predicted_variance1 + predicted_variance2) / 2
+
+    cfg_noise_est1 = uncond_noise_est + scale * (noise_est1 - uncond_noise_est)
+    cfg_noise_est2 = uncond_noise_est + scale * (noise_est2 - uncond_noise_est)
+
+    low_est1 = TF.gaussian_blur(cfg_noise_est1, kernel_size, sigma)
+    high_est2 = cfg_noise_est2 - TF.gaussian_blur(cfg_noise_est2, kernel_size, sigma)
+    cfg_noise_est = low_est1 + high_est2
+    </code></pre>
+    </div>
+
+    <div class="image-row">
+        <figure>
+            <img src="./images/part_a/1.9/1.9_panda_canyon.jpg">
+            <figcaption>Panda Canyon Hybrid</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_a/1.9/1.9_panda_library.jpg">
+            <figcaption>Panda Library Hybrid</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_a/1.9/1.9_skull_waterfalls.jpg">
+            <figcaption>Skull Waterfalls Hybrid</figcaption>
+        </figure>
+    </div>
+
+        <h1>Part B</h1>
+
+        <p>
+            TODO
+        </p>
+
+    <div>
+        <h2>Conclusion </h2>
+        <p>
+            TODO
+        </p>
+    </div>
+</div>
+</body>
+</html>
