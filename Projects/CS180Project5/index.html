@@ -34,7 +34,7 @@
         /* For images with captions, used inside an image-row */
         figure {
             flex: 1 1 400px;         /* The 1 1 values allows the image to grow or shrink, image containers start at 400px */
-            max-width: 400px;        /* Caps the containers width */
+            max-width: 300px;        /* Caps the containers width */
             margin: 0px;             /* Gets rid of the margin around the images so that gap in image-row can set it  */
             text-align: center;      /* centers captions below each image */
             min-width: 0;             /* Allows images to stay the same size when they shrink */
@@ -85,7 +85,10 @@
     <div>
         <h2>Introduction</h2>
         <p>
-            TODO
+            In this project I explore diffusion models from both a theoretical and practical perspective. Part A focuses on working with a large pretrained model, DeepFloyd IF, to understand the forward noising process, classical and learned denoising, iterative sampling, classifier-free guidance, and image editing techniques such as SDEdit, inpainting, visual anagrams, and hybrid image synthesis. These experiments illustrate how diffusion models represent images, how noise is progressively removed, and how conditioning signals influence the generative process.
+
+            <br><br>
+            In Part B I build diffusion-inspired models from scratch on MNIST, beginning with a single-step denoiser and then extending the approach to flow matching for iterative generation. I implement time-conditioned and class-conditioned UNets, train them using the flow matching objective, and evaluate their sampling behavior over the course of training. Together, these two parts provide both a high-level understanding of diffusion-based generation and a low-level view of how such models are constructed and trained.
         </p>
     </div>
 
@@ -216,7 +219,7 @@
             A pretrained diffusion model is now used for denoising. The model is a UNet trained on a large dataset of noisy and clean image pairs, which allows it to estimate the Gaussian noise present in an input image. The UNet is conditioned on the amount of noise by receiving the timestep \( t \) as an additional input. Since the diffusion model was originally trained with text conditioning, I provide the text embedding for "a high quality photo" during inference.
             
             <br><br>
-            The denoising step proceeds as follows. The noisy image \( x_t \) is passed into the UNet, which predicts the noise \( \epsilon \). This noise prediction is then removed from the noisy image using the closed-form expression \( x_0 = \frac{x_t - \sqrt{1 - \bar{\alpha}_t}\epsilon}{\sqrt{\bar{\alpha}_t}} \) to obtain a denoised image. Shown below are the results of this one-step denoising procedure. Notice that higher levels of noise, the denoised image starts to resemble the original image less and less.
+            The denoising step proceeds as follows. The noisy image \( x_t \) is passed into the UNet, which predicts the noise \( \epsilon \). This noise prediction is then removed from the noisy image using the closed-form expression \( x_0 = \frac{x_t - \sqrt{1 - \bar{\alpha}_t}\epsilon}{\sqrt{\bar{\alpha}_t}} \) to obtain a denoised image. Shown below are the results of this one-step denoising procedure. Notice that at higher levels of noise, the denoised image starts to resemble the original image less and less.
         </p>
 
         <div class="image-row">
@@ -363,10 +366,12 @@
         <h3>1.6 Classifier-Free Guidance (CFG)</h3>
     
         <p>
-            As shown in the previous section, the generated images are not very high quality. They can be improved using a technique called Classifier-Free Guidance (CFG). In CFG, we compute both a conditional and an unconditional noise estimate, denoted \( \epsilon_c \) and \( \epsilon_u \) respectively. The final noise estimate is then  
+            As shown in the previous section, the generated images are not very high quality. They can be improved using a technique called Classifier-Free Guidance (CFG). In CFG, we compute both a conditional and an unconditional noise estimate, denoted \( \epsilon_c \) and \( \epsilon_u \) respectively. The final noise estimate is then
+
             \[
             \epsilon = \epsilon_u + \gamma(\epsilon_c - \epsilon_u),
             \]
+
             where \( \gamma \) controls the strength of the guidance. When \( \gamma = 0 \), the model produces an unconditional estimate. When \( \gamma = 1 \), the estimate is fully conditional. Higher quality samples are typically obtained when \( \gamma > 1 \).
             
             <br><br>
@@ -405,7 +410,7 @@
             In this section I experiment with taking the original Campanile image, adding a small amount of noise, and then projecting it back onto the manifold of natural images without any text conditioning. This allows us to make controllable edits to an existing image, where adding more noise leads to larger edits. The idea works because denoising requires the diffusion model to infer missing details, which gives it the ability to hallucinate plausible structure. This process produces an image that is similar to the original in overall content but altered in a way that depends on the noise level. This follows the principles of the SDEdit algorithm.
             
             <br><br>
-            The procedure is implemented by first applying the <code>forward</code> function to add noise to the Campanile image, then running <code>iterative_denoise_cfg</code> with different starting indices in <code>strided_timesteps</code> to denoise it. The results are shown below. Images that start closer to the original (with less noise) remain more faithful, while those that begin from heavy noise eventually resemble random samples and share little resemblance to the input image.
+            The procedure is implemented by first applying the <code>forward</code> function to add noise to the Campanile image, then running <code>iterative_denoise_cfg</code> with different starting indices in <code>strided_timesteps</code> to denoise it. The results are shown below. Images that start closer to the original (with less noise) remain more faithful, while those that begin from heavy noise eventually resemble random samples and retain little structure from the input image.
         </p>
 
         <div class="image-row">
@@ -884,18 +889,336 @@
         </figure>
     </div>
 
-        <h1>Part B</h1>
+    <h1>Part B</h1>
 
-        <p>
-            TODO
-        </p>
+    <h2>Part 1: Training a Single-Step Denoising UNet</h2>
+
+    <h3>1.1 Implementing the UNet</h3>
+
+    <p>
+        Here I start by building a simple one-step denoiser. Given a noisy image \( z \), the goal is to train a denoiser \( D_{\theta} \) that maps \( z \) to its corresponding clean image \( x \). To do this, we optimize an L2 objective,
+
+        \[
+            L = \mathbb{E}_{z, x} \lVert D_{\theta}(z) - x \rVert^{2}.
+        \]
+
+        The model architecture is shown below. It consists of a sequence of downsampling and upsampling blocks with skip connections. These skip connections help the model retain high-frequency information and prevent it from discarding details from the input image. In the diagrams, \( D \) denotes the number of hidden channels, which is a tunable hyperparameter.
+    </p>
+
+    <div class="image-row">
+        <figure>
+            <img src="./images/part_b/1.2.0/unconditional unet.png">
+            <figcaption>Unconditional UNet Architecture</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/1.2.0/standard unet ops.png">
+            <figcaption>Standard UNet Operations</figcaption>
+        </figure>
+    </div>
+        
+    <p>
+        At a high level, the <b>Conv</b> blocks increase the number of channels, the <b>DownConv</b> blocks downsample the tensors by a factor of 2, and the <b>UpConv</b> blocks upsample them by a factor of 2. The <b>Flatten</b> layer performs average pooling to convert a 7x7 tensor into a 1x1 tensor, while the <b>Unflatten</b> layer reverses this operation by expanding a 1x1 tensor back into a 7x7 tensor. Finally, <b>Concat</b> represents channel-wise concatenation between two tensors of the same spatial size.
+    </p>
+
+    <h3>1.2 Using the UNet to Train a Denoiser</h3>
+
+    <p>
+        To train the denoiser UNet, we need to generate training pairs \( (z, x) \) where each \( x \) is a clean MNIST digit and each \( z \) is a noisy version of the clean image. We construct the noisy image \( z \) using
+
+        \[
+            z = x + \sigma \epsilon, \qquad \epsilon \sim \mathcal{N}(0, I).
+        \]
+
+        Shown below is a visualization of the noise process for
+        \( \sigma \in [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0] \), assuming the clean images \( x \in [0, 1] \) are normalized. As \( \sigma \) increases, the images become progressively noisier until the original digit is no longer recognizable.
+    </p>
+
+    <div class="image-row">
+        <figure>
+            <img src="./images/part_b/1.2.0/1.2.0_noise_0.0.jpg">
+            <figcaption>MNIST noised at \( \sigma = 0.0 \)</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/1.2.0/1.2.0_noise_0.2.jpg">
+            <figcaption>MNIST noised at \( \sigma = 0.2 \)</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/1.2.0/1.2.0_noise_0.4.jpg">
+            <figcaption>MNIST noised at \( \sigma = 0.4 \)</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/1.2.0/1.2.0_noise_0.5.jpg">
+            <figcaption>MNIST noised at \( \sigma = 0.5 \)</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/1.2.0/1.2.0_noise_0.6.jpg">
+            <figcaption>MNIST noised at \( \sigma = 0.6 \)</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/1.2.0/1.2.0_noise_0.8.jpg">
+            <figcaption>MNIST noised at \( \sigma = 0.8 \)</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/1.2.0/1.2.0_noise_1.0.jpg">
+            <figcaption>MNIST noised at \( \sigma = 1.0 \)</figcaption>
+        </figure>
+    </div>
+
+    <h3>1.2.1 Training</h3>
+
+    <p>
+        Now I train the model to perform denoising. For this experiment I set \( \sigma = 0.5 \) and use the MNIST dataset via <code>torchvision.datasets.MNIST</code>. The training setup uses a batch size of 256, 5 epochs, a hidden dimension of \( D = 128 \), and the Adam optimizer with a learning rate of 1e-4. Noise is added on the fly when batches are fetched from the dataloader, so each epoch presents the network with newly noised images due to the fresh samples of \( \epsilon \). This improves generalization by preventing the model from memorizing fixed noise patterns.
+        
+        <br><br>
+        Shown below are the results of training. After the first and fifth epochs, three MNIST digits are sampled, noised, and then denoised using the model. The corresponding outputs are displayed, along with a plot of the training loss.
+    </p>
+
+    <div class="image-row">
+        <figure>
+            <img src="./images/part_b/1.2.1/1.2.1_epoch_0.jpg">
+            <figcaption>Training Epoch 1 Results</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/1.2.1/1.2.1_epoch_4.jpg">
+            <figcaption>Training Epoch 5 Results</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/1.2.1/1.2.1_training_loss.jpg">
+            <figcaption>Training Loss</figcaption>
+        </figure>
+    </div>
+
+    <h3>1.2.2 Out-of-Distribution Testing</h3>
+
+    <p>
+        The denoiser was trained on MNIST digits noised with \( \sigma = 0.5 \). Shown below are its results on a range of noise levels it was not trained for, specifically \( \sigma \in [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0] \). For noise levels below 0.5, the model generally produces clean and recognizable digits, although there is occasional ambiguity between similar classes (for example, 1 and 7). For noise levels above 0.5, the model is no longer able to remove the noise effectively, and the outputs typically fail to form coherent digits.
+    </p>
+
+    <div class="image-row">
+        <figure>
+            <img src="./images/part_b/1.2.2/1.2.2_original.jpg">
+            <figcaption>Original MNIST Digit</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/1.2.2/1.2.2_noise.jpg">
+            <figcaption>MNIST Noised And Denoised</figcaption>
+        </figure>
+    </div>
+
+    <h3>1.2.3 Denoising Pure Noise</h3>
+
+    <p>
+        To make denoising a generative task, we would like the model to denoise pure Gaussian noise. In this setting, we
+        begin with a blank canvas \( z = \epsilon \) where \( \epsilon \sim \mathcal{N}(0, I) \), and the goal is for the
+        network to map this noise to a clean image \( x \).
+
+        <br><br>
+        The same training procedure used in Section 1.2.1 is repeated, but now the input consists solely of pure noise,
+        which the model attempts to denoise over the course of 5 epochs. Shown below are the results of this training
+        process. After the first and fifth epochs, three noise samples are drawn, passed through the model, and the
+        corresponding denoised outputs are displayed. A plot of the training loss is also included.
+    </p>
+
+    <div class="image-row">
+        <figure>
+            <img src="./images/part_b/1.2.3/1.2.3_epoch_0.jpg">
+            <figcaption>Training Epoch 1 Results</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/1.2.3/1.2.3_epoch_4.jpg">
+            <figcaption>Training Epoch 5 Results</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/1.2.3/1.2.3_training_loss.jpg">
+            <figcaption>Training Loss</figcaption>
+        </figure>
+    </div>
+
+    <p>
+        Notice that all of the outputs look largely the same. Since the model has no information about what the original
+        image should be, it attempts to produce an output that minimizes the expected error across all possible MNIST
+        digits. This leads to a blurred, averaged-looking result that does not resemble any specific digit.
+    </p>
+
+    <h2>Part 2: Training a Flow Matching Model</h2>
+
+    <p>
+        In the previous sections, we saw that one-step denoising does not work well for generative tasks. To address this, we now perform iterative denoising using flow matching. The idea is to train a UNet to predict the flow that moves a noisy sample toward a clean sample. In this setup, we draw a pure noise image \( x_0 \sim \mathcal{N}(0, I) \) and aim to generate a realistic image \( x_1 \).
+
+        <br><br>
+        For iterative denoising, we need to define how intermediate noisy samples are constructed. The simplest approach, and the one used here, is linear interpolation between the noisy image \( x_0 \) and a clean training image \( x_1 \). This gives
+
+        \[
+            x_t = (1 - t)x_0 + t x_1, \qquad x_0 \sim \mathcal{N}(0, I), t \in [0, 1].
+        \]
+
+        This defines a vector field describing the position of a point \( x_t \) at time \( t \) as it moves from the noisy distribution \( p_0(x_0) \) toward the clean distribution \( p_1(x_1) \). The corresponding flow, which can be interpreted as the velocity of this vector field, is
+
+        \[
+            u(x_t, t) = \frac{d}{dt} x_t = x_1 - x_0.
+        \]
+
+        Our goal is to learn a UNet \( u_{\theta}(x_t, t) \) that approximates this flow, predicting the direction in which \( x_t \) should move to reach the clean image. This leads to the following learning objective:
+
+        \[
+            L = \mathbb{E}_{x_0 \sim p_0(x_0), x_1 \sim p_1(x_1), t \sim U[0,1]} \bigl\lVert (x_1 - x_0) - u_{\theta}(x_t, t) \bigr\rVert^{2}.
+        \]
+
+    </p>
+
+
+    <h3>2.1 Adding Time Conditioning to UNet</h3>
+
+    <p>
+        The model is now modified so that, in addition to receiving an image to denoise, it also takes a time input \( t \). To incorporate this conditioning signal into the UNet, a new module called <b>FCBlock</b> is added. This block processes the scalar \( t \) and produces conditioning values that are injected into the UNet by multiplying them with intermediate feature representations. 
+
+        <br><br>
+        Shown below is the resulting architecture with time conditioning included and the new operation.
+    </p>
+
+    <div class="image-row">
+        <figure>
+            <img src="./images/part_b/2.1/time conditioned unet.png">
+            <figcaption>Time Conditioned UNet Architecture</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/2.1/fcb block.png ">
+            <figcaption>FCB Block</figcaption>
+        </figure>
+    </div>
+    
+    <h3>2.2 Training the UNet</h3>
+
+    <p>
+        Training follows the same general procedure as before. A random clean image \( x_1 \) is sampled from the dataset, a random timestep \( t \) is drawn, noise is added to construct \( x_t \), and the UNet is trained to predict the corresponding flow at \( x_t \). This process is repeated across different images and timesteps until the model converges.
+        
+        <br><br>
+        For this experiment, the batch size is set to 64 and the number of epochs is increased to 10. The hidden dimension is \( 64 \), and the Adam optimizer is used with an initial learning rate of 1e-2. An exponential learning rate decay scheduler with decay factor \( 0.1^{1.0 / \text{num\_epochs}} \) is applied, and <code>scheduler.step()</code> is called after every epoch.
+        
+        <br><br>
+        Shown below is the training algorithm and a plot of the training loss.
+    </p>
+
+    <div class="image-row">
+        <figure>
+            <img src="./images/part_b/2.2/training time conditioned unet.png">
+            <figcaption>Time Conditioned UNet Training Algorithm</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/2.2/2.2_training_loss.jpg">
+            <figcaption>Training Loss</figcaption>
+        </figure>
+    </div>
+
+    <h3>2.3 Sampling from the UNet</h3>
+
+    <p>
+        The trained UNet for iterative denoising can now be used to generate samples. Shown below is the sampling algorithm along with results after 1, 5, and 10 epochs of training. Early in training, the outputs are not recognizable, but by the final epoch, coherent digits begin to appear.
+    </p>
+
+    <div class="image-row">
+        <figure>
+            <img src="./images/part_b/2.3/sampling time conditioned unet.png">
+            <figcaption>Time Conditioned UNet Sampling Algorithm</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/2.3/2.3_epoch_0.jpg">
+            <figcaption>Training Epoch 1 Results</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/2.3/2.3_epoch_4.jpg">
+            <figcaption>Training Epoch 5 Results</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/2.3/2.3_epoch_9.jpg">
+            <figcaption>Training Epoch 10 Results</figcaption>
+        </figure>
+    </div>
+    
+    <h3>2.4 Adding Class-Conditioning to UNet</h3>
+
+    <p>
+        To improve generation quality and provide control over which digit is produced, we can optionally condition the UNet on the class label 0-9. This requires adding two additional <b>FCBlock</b> modules to the architecture and one-hot encoding the class label \( c \) into a vector that is passed through these blocks.
+        
+        <br><br>
+        Because we still want the UNet to function without class conditioning, we apply dropout to the class embedding. With probability \( p_{\text{uncond}} = 0.1 \), the class conditioning vector \( c \) is replaced with zeros. Inside the model, the embedded class signal is multiplied with intermediate representations and then added to the embedded time signal.
+    </p>
+
+    <h3>2.5 Training the UNet</h3>
+
+    <p>
+        Training follows the same procedure as in the previous sections, and all hyperparameters remain the same. Shown below are the training algorithm for this class-conditional UNet and a plot of the training loss for this model.
+    </p>
+
+    <div class="image-row">
+        <figure>
+            <img src="./images/part_b/2.5/training class conditioned unet.png">
+            <figcaption>Class Conditioned UNet Training Algorithm</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/2.5/2.5_training_loss.jpg">
+            <figcaption>Training Loss</figcaption>
+        </figure>
+    </div>
+
+    <h3>2.6 Sampling from the UNet</h3>
+
+    <p>
+        Sampling is performed using the algorithm shown below with a classifier-free guidance value of \( \gamma = 0.5 \). Shown beneath are four samples for each digit after 1, 5, and 10 epochs of training. By the final epoch, the generated digits closely resemble real MNIST samples while still remaining distinct from one another.
+    </p>
+
+    <div class="image-row">
+        <figure>
+            <img src="./images/part_b/2.6/sampling class conditioned unet.png">
+            <figcaption>Class Conditioned UNet Sampling Algorithm</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/2.6/2.6_epoch_0.jpg">
+            <figcaption>Training Epoch 1 Results</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/2.6/2.6_epoch_4.jpg">
+            <figcaption>Training Epoch 5 Results</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/2.6/2.6_epoch_9.jpg">
+            <figcaption>Training Epoch 10 Results</figcaption>
+        </figure>
+    </div>
+
+    <p>
+        Can we remove the learning rate scheduler? The answer is yes. Without the scheduler, the learning rate no longer decays, so the original value of 1e-2 is too large for stable training. To compensate, I reduce the learning rate to 1e-3 while keeping all other parameters the same. Shown below is the training loss curve with this adjusted learning rate, along with the corresponding sampling results.
+    </p>
+
+    <div class="image-row">
+        <figure>
+            <img src="./images/part_b/2.7/2.7_epoch_0.jpg">
+            <figcaption>Training Epoch 1 Results</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/2.7/2.7_epoch_4.jpg">
+            <figcaption>Training Epoch 5 Results</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/2.7/2.7_epoch_9.jpg">
+            <figcaption>Training Epoch 10 Results</figcaption>
+        </figure>
+        <figure>
+            <img src="./images/part_b/2.7/2.7_training_loss.jpg">
+            <figcaption>Training Loss</figcaption>
+        </figure>
+    </div>
 
     <div>
         <h2>Conclusion </h2>
         <p>
-            TODO
+            This project provided a comprehensive look at diffusion models from two complementary angles. Working with DeepFloyd IF demonstrated how modern diffusion pipelines perform iterative denoising, incorporate classifier-free guidance, and enable flexible image editing and manipulation. Recreating these ideas on MNIST through UNet-based denoisers and flow matching models showed how these systems behave at a smaller scale, making it possible to visualize and understand each component of the training and sampling process.
+
+            <br><br>
+            Across both parts, the experiments highlight the core principles that make diffusion models effective: gradual refinement through iterative denoising, strong conditioning mechanisms, and the ability to guide generation using learned flows. By the end, the models were able to generate coherent digits, produce controlled class-conditional samples, and perform complex editing tasks on real images. Together, these results illustrate the elegance and versatility of the diffusion framework.
         </p>
     </div>
+
 </div>
 </body>
 </html>
